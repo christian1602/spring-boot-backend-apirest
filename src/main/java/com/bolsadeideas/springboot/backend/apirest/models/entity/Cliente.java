@@ -36,7 +36,7 @@ public class Cliente implements Serializable {
 	
 	@NotEmpty
 	@Email
-	@Column(nullable = false, unique = true)
+	@Column(unique = true)
 	private String email;
 	
 	@Column(name = "created_at")
