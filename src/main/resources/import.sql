@@ -1,0 +1,12 @@
+INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('Andres','Guzman','profesor@bolsadeideas.com','2017-08-28');
+INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('John','Doe','john.doe@gmail.com','2017-08-28');
+INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('Andres 2','Guzman','profesor2@bolsadeideas.com','2017-08-28');
+INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('John 2','Doe','john.doe2@gmail.com','2017-08-28');
+INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('Andres 3','Guzman','profesor3@bolsadeideas.com','2017-08-28');
+INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('John 3','Doe','john.doe3@gmail.com','2017-08-28');
+INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('Andres 4','Guzman','profesor4@bolsadeideas.com','2017-08-28');
+INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('John 4','Doe','john.doe4@gmail.com','2017-08-28');
+INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('Andres 5','Guzman','profesor5@bolsadeideas.com','2017-08-28');
+INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('Joh 5n','Doe','john.doe5@gmail.com','2017-08-28');
+INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('Andres 6','Guzman','profesor6@bolsadeideas.com','2017-08-28');
+INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('John 6','Doe','john.doe6@gmail.com','2017-08-28');
