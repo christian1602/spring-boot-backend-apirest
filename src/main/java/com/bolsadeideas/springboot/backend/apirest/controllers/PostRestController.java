@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,57 +18,82 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
-import com.bolsadeideas.springboot.backend.apirest.models.entity.Cliente;
-import com.bolsadeideas.springboot.backend.apirest.models.services.IClienteService;
+import com.bolsadeideas.springboot.backend.apirest.models.entity.Post;
+import com.bolsadeideas.springboot.backend.apirest.models.services.IPostApiService;
+import com.bolsadeideas.springboot.backend.apirest.models.services.IPostService;
 
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = { "http://localhost:4200" })
-public class ClienteRestController {
+@CrossOrigin(origins = { "http://localhost:4200 " })
+public class PostRestController {
 
-	private final IClienteService clienteService;
+	private final IPostService postService;	
+	private final IPostApiService postApiService;
 
-	public ClienteRestController(IClienteService clienteService) {
-		this.clienteService = clienteService;
+	public PostRestController(IPostService postService, IPostApiService postApiService) {
+		this.postService = postService;
+		this.postApiService = postApiService;
+	}
+		
+	
+	@GetMapping("/sync-posts")
+	public ResponseEntity<?> syncPosts(){
+		List<Post> posts = this.postApiService.fetchPosts();
+		
+		Map<String, Object> response = new HashMap<>();
+		
+		if (posts.size() == 0) {
+			response.put("mensaje", "La lista de Posts se encuentra vacía");
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NO_CONTENT);
+		}
+		
+		try {
+			this.postApiService.saveAll(posts);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al realizar el insert masivo de la lista de Posts en la base de datos");
+			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+		response.put("mensaje", "La sincronización de Posts fue realizada éxito!");
+		
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/clientes")
-	public List<Cliente> index() {
-		return this.clienteService.findAll();
+	@GetMapping("/posts")
+	public List<Post> index() {
+		return this.postService.findAll();
 	}
 
-	@GetMapping("/clientes/{id}")
-	// @ResponseStatus(HttpStatus.OK) // PUEDE OMITIRSE YA QUE POR DEFECTO SIEMPRE
-	// DEVUELVE HttpStatus.OK
+	@GetMapping("/posts/{id}")
 	public ResponseEntity<?> show(@PathVariable Long id) {
-		Cliente cliente = null;
+		Post post = null;
 
 		Map<String, Object> response = new HashMap<>();
 
 		try {
-			cliente = this.clienteService.findById(id);
+			post = this.postService.findById(id);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar la consulta en la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		if (cliente == null) {
+		if (post == null) {
 			response.put("mensaje",
 					"El cliente con el ID: ".concat(id.toString()).concat(" no existe en la base de datos"));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 
-		return new ResponseEntity<Cliente>(cliente, HttpStatus.OK);
+		return new ResponseEntity<Post>(post, HttpStatus.OK);
 	}
 
-	@PostMapping("/clientes")
-	public ResponseEntity<?> create(@Valid @RequestBody Cliente cliente, BindingResult result) {
-		Cliente nuevoCliente = null;
+	@PostMapping("/posts")
+	public ResponseEntity<?> create(@Valid @RequestBody Post post, BindingResult result) {
+		Post nuevoPost = null;
 		Map<String, Object> response = new HashMap<>();
 
 		if (result.hasErrors()) {
@@ -78,27 +102,26 @@ public class ClienteRestController {
 					.collect(Collectors.toList());
 
 			response.put("errors", errors);
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 
 		try {
-			nuevoCliente = this.clienteService.save(cliente);
+			nuevoPost = this.postService.save(post);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar el insert en la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		response.put("mensaje", "¡El cliente ha sido creado con éxito!");
-		response.put("cliente", nuevoCliente);
+		response.put("mensaje", "¡El Post ha sido creado con éxito!");
+		response.put("cliente", nuevoPost);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
-	@PutMapping("/clientes/{id}")
-	public ResponseEntity<?> update(@Valid @RequestBody Cliente cliente, BindingResult result, @PathVariable Long id) {
-		Cliente clienteActual = this.clienteService.findById(id);
-		Cliente cienteActualizado = null;
+	@PutMapping("/posts/{id}")
+	public ResponseEntity<?> update(@Valid @RequestBody Post post, BindingResult result, @PathVariable Long id) {
+		Post postActual = this.postService.findById(id);
+		Post postActualizado = null;
 
 		Map<String, Object> response = new HashMap<>();
 
@@ -108,48 +131,49 @@ public class ClienteRestController {
 					.collect(Collectors.toList());
 
 			response.put("error", errors);
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		if (clienteActual == null) {
-			response.put("mensaje", "Error: No se pudo editar, el cliente con el ID: ".concat(id.toString())
+		if (postActual == null) {
+			response.put("mensaje", "Error: No se pudo editar, el Post con el ID: ".concat(id.toString())
 					.concat(" no existe en la base de datos"));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 
 		try {
-			clienteActual.setNombre(cliente.getNombre());
-			clienteActual.setApellido(cliente.getApellido());
-			clienteActual.setEmail(cliente.getEmail());
+			postActual.setUserId(post.getUserId());
+			postActual.setTitle(post.getTitle());
+			postActual.setBody(post.getBody());
 
-			cienteActualizado = this.clienteService.save(clienteActual);
+			postActualizado = this.postService.save(postActual);
 		} catch (DataAccessException e) {
-			response.put("mensaje", "Error al actualizar el cliente en la base de datos");
+			response.put("mensaje", "Error al actualizar el Post en la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		response.put("mensaje", "¡El cliente ha sido actualizado con éxito!");
-		response.put("cliente", cienteActualizado);
+		response.put("mensaje", "¡El Post ha sido actualizado con éxito!");
+		response.put("post", postActualizado);
 
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@DeleteMapping("/clientes/{id}")
+	@DeleteMapping("/cllientes/{id}")
 	public ResponseEntity<?> delete(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
 
-		Cliente cliente = clienteService.findById(id);
-		if (cliente == null) {
-			response.put("mensaje", "Error: no se pudo eliminar, el cliente con ID: "
+		Post post = this.postService.findById(id);
+
+		if (post == null) {
+			response.put("mensaje", "Error: no se pudo eliminar, el Post con ID: "
 					.concat(id.toString().concat(" no existe en la base de datos!")));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 
 		try {
-			this.clienteService.delete(id);
+			this.postService.delete(id);
 		} catch (DataAccessException e) {
-			response.put("mensaje", "Error al eliminar el cliente de la base de datos");
+			response.put("mensaje", "Error al eliminar el Post de la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -158,5 +182,4 @@ public class ClienteRestController {
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
-
 }
