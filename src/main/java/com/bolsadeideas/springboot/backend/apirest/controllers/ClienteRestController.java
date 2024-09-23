@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import com.bolsadeideas.springboot.backend.apirest.models.entity.Cliente;
 import com.bolsadeideas.springboot.backend.apirest.models.services.IClienteService;
@@ -29,9 +30,17 @@ import jakarta.validation.Valid;
 @RequestMapping("/api")
 @CrossOrigin(origins = { "http://localhost:4200" })
 public class ClienteRestController {
+	
+	// private final RestTemplate restTemplate;
+	private final IClienteService clienteService;	
 
-	@Autowired
-	private IClienteService clienteService;
+	public ClienteRestController(IClienteService clienteService
+			//RestTemplate restTemplate
+			) {
+		this.clienteService = clienteService;
+		// this.restTemplate = restTemplate;
+	}
+	
 
 	@GetMapping("/clientes")
 	public List<Cliente> index() {
@@ -150,4 +159,11 @@ public class ClienteRestController {
 		
 		return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK);
 	}
+	/*
+	@GetMapping("/consume")
+	public String consumeApi(){
+		String url = "https://jsonplaceholder.typicode.com/posts";
+		return this.restTemplate.getForObject(url, String.class);
+	}
+	*/
 }
