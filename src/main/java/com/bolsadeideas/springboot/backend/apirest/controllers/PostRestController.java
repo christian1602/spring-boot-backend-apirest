@@ -158,7 +158,7 @@ public class PostRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@DeleteMapping("/cllientes/{id}")
+	@DeleteMapping("/posts/{id}")
 	public ResponseEntity<?> delete(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
 
