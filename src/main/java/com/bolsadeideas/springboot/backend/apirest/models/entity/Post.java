@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -17,7 +16,6 @@ import jakarta.validation.constraints.NotEmpty;
 
 @Entity
 @Table(name = "posts")
-// @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Post implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -34,7 +32,7 @@ public class Post implements Serializable {
 	@Column(name = "body")
 	private String body;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne
 	@JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
 	@JsonBackReference
 	private User user;
