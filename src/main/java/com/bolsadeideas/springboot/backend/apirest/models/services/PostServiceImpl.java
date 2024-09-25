@@ -26,7 +26,7 @@ public class PostServiceImpl implements IPostService {
 	@Override
 	@Transactional(readOnly = true)
 	public Post findById(Long id) {
-		return this.postDao.findById(id).orElseGet(null);
+		return this.postDao.findById(id).orElse(null);
 	}
 
 	@Override

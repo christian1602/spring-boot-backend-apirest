@@ -19,84 +19,53 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bolsadeideas.springboot.backend.apirest.models.entity.Post;
 import com.bolsadeideas.springboot.backend.apirest.models.entity.User;
-import com.bolsadeideas.springboot.backend.apirest.models.services.IPostApiService;
-import com.bolsadeideas.springboot.backend.apirest.models.services.IPostService;
-import com.bolsadeideas.springboot.backend.apirest.models.services.IUserValidationService;
+import com.bolsadeideas.springboot.backend.apirest.models.services.IUserService;
 
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = { "http://localhost:4200 " })
-public class PostRestController {
+public class UserRestController {
 
-	private final IPostService postService;		
-	private final IUserValidationService userValidationService;
-	private final IPostApiService postApiService;
+	private final IUserService userService;	
 
-	public PostRestController(IPostService postService, IPostApiService postApiService, IUserValidationService userValidationService) {
-		this.postService = postService;
-		this.postApiService = postApiService;	
-		this.userValidationService = userValidationService;
-	}
-	
-	@GetMapping("/sync-posts")
-	public ResponseEntity<?> syncPosts(){
-		List<Post> posts = this.postApiService.fetchPosts();
-		
-		Map<String, Object> response = new HashMap<>();
-		
-		if (posts.size() == 0) {
-			response.put("mensaje", "La lista de Posts se encuentra vacía");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NO_CONTENT);
-		}
-		
-		try {
-			this.postApiService.saveAll(posts);
-		} catch (DataAccessException e) {
-			response.put("mensaje", "Error al realizar el insert masivo de la lista de Posts en la base de datos");
-			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		
-		response.put("mensaje", "La sincronización de Posts fue realizada éxito!");
-		
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+	public UserRestController(IUserService userService) {
+		this.userService = userService;		
 	}
 
-	@GetMapping("/posts")
-	public List<Post> index() {
-		return this.postService.findAll();
+	@GetMapping("/users")
+	public List<User> index() {
+		return this.userService.findAll();
 	}
 
-	@GetMapping("/posts/{id}")
+	@GetMapping("/users/{id}")
 	public ResponseEntity<?> show(@PathVariable Long id) {
-		Post post = null;
+		User user = null;
 
 		Map<String, Object> response = new HashMap<>();
 
 		try {
-			post = this.postService.findById(id);
+			user = this.userService.findById(id);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar la consulta en la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		if (post == null) {
+		if (user == null) {
 			response.put("mensaje",
-					"El cliente con el ID: ".concat(id.toString()).concat(" no existe en la base de datos"));
+					"El User con el ID: ".concat(id.toString()).concat(" no existe en la base de datos"));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 
-		return new ResponseEntity<Post>(post, HttpStatus.OK);
+		return new ResponseEntity<User>(user, HttpStatus.OK);
 	}
 
-	@PostMapping("/posts")
-	public ResponseEntity<?> create(@Valid @RequestBody Post post, BindingResult result) {
-		Post nuevoPost = null;
+	@PostMapping("/users")
+	public ResponseEntity<?> create(@Valid @RequestBody User user, BindingResult result) {
+		User nuevoUser = null;
 		Map<String, Object> response = new HashMap<>();
 
 		if (result.hasErrors()) {
@@ -106,30 +75,25 @@ public class PostRestController {
 
 			response.put("errors", errors);
 		}
-		
-		ResponseEntity<?> validationResponse = this.userValidationService.validateUser(post, response);
-		if (validationResponse != null) {
-			return validationResponse;
-		}
 
-		try {			
-			nuevoPost = this.postService.save(post);
+		try {
+			nuevoUser = this.userService.save(user);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar el insert en la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		response.put("mensaje", "¡El Post ha sido creado con éxito!");
-		response.put("post", nuevoPost);
+		response.put("mensaje", "¡El Usuario ha sido creado con éxito!");
+		response.put("user", nuevoUser);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
-	@PutMapping("/posts/{id}")
-	public ResponseEntity<?> update(@Valid @RequestBody Post post, BindingResult result, @PathVariable Long id) {
-		Post postActual = this.postService.findById(id);
-		Post postActualizado = null;
+	@PutMapping("/users/{id}")
+	public ResponseEntity<?> update(@Valid @RequestBody User user, BindingResult result, @PathVariable Long id) {
+		User userActual = this.userService.findById(id);
+		User userActualizado = null;
 
 		Map<String, Object> response = new HashMap<>();
 
@@ -141,60 +105,52 @@ public class PostRestController {
 			response.put("error", errors);
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		
-		if (postActual == null) {
-			response.put("mensaje", "Error: No se pudo editar, el Post con el ID: ".concat(id.toString())
+
+		if (userActual == null) {
+			response.put("mensaje", "Error: No se pudo editar, el User con el ID: ".concat(id.toString())
 					.concat(" no existe en la base de datos"));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
-		
-		ResponseEntity<?> validationResponse = this.userValidationService.validateUser(post, response);
-		if (validationResponse != null) {
-			return validationResponse;
-		}		
 
 		try {
-			postActual.setTitle(post.getTitle());
-			postActual.setBody(post.getBody());
-			
-			User userActualizado = new User();
-			userActualizado.setId(post.getUser().getId());
-			postActual.setUser(userActualizado);
+			userActual.setName(user.getName());
+			userActual.setUsername(user.getUsername());
+			userActual.setEmail(user.getEmail());
 
-			postActualizado = this.postService.save(postActual);
+			userActualizado = this.userService.save(userActual);
 		} catch (DataAccessException e) {
-			response.put("mensaje", "Error al actualizar el Post en la base de datos");
+			response.put("mensaje", "Error al actualizar el User en la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		response.put("mensaje", "¡El Post ha sido actualizado con éxito!");
-		response.put("post", postActualizado);
+		response.put("mensaje", "¡El User ha sido actualizado con éxito!");
+		response.put("post", userActualizado);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@DeleteMapping("/posts/{id}")
+	@DeleteMapping("/users/{id}")
 	public ResponseEntity<?> delete(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
 
-		Post post = this.postService.findById(id);
+		User user = this.userService.findById(id);
 
-		if (post == null) {
-			response.put("mensaje", "Error: no se pudo eliminar, el Post con ID: "
+		if (user == null) {
+			response.put("mensaje", "Error: no se pudo eliminar, el User con ID: "
 					.concat(id.toString().concat(" no existe en la base de datos!")));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 
 		try {
-			this.postService.delete(id);
+			this.userService.delete(id);
 		} catch (DataAccessException e) {
-			response.put("mensaje", "Error al eliminar el Post de la base de datos");
+			response.put("mensaje", "Error al eliminar el User de la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		response.put("mensaje", "¡El Post ha sido eliminado con éxito!");
+		response.put("mensaje", "¡El User ha sido eliminado con éxito!");
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
