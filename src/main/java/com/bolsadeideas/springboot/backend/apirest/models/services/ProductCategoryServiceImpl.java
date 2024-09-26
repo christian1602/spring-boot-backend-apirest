@@ -20,7 +20,7 @@ public class ProductCategoryServiceImpl implements IProductCategoryService {
 	@Override
 	@Transactional(readOnly = true)
 	public List<ProductCategory> findAll() {
-		return (List<ProductCategory>) this.productCategoryDao.findAllById(null);
+		return (List<ProductCategory>) this.productCategoryDao.findAll();
 	}
 
 	@Override
@@ -30,13 +30,13 @@ public class ProductCategoryServiceImpl implements IProductCategoryService {
 	}
 
 	@Override
-	@Transactional()
+	@Transactional
 	public ProductCategory save(ProductCategory productCategory) {
 		return this.productCategoryDao.save(productCategory);
 	}
 
 	@Override
-	@Transactional()
+	@Transactional
 	public void delete(Long id) {
 		this.productCategoryDao.deleteById(id);
 	}

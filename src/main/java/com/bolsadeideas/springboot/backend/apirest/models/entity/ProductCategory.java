@@ -2,6 +2,10 @@ package com.bolsadeideas.springboot.backend.apirest.models.entity;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -14,6 +18,7 @@ import jakarta.validation.constraints.NotEmpty;
 
 @Entity
 @Table(name = "product_category")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class ProductCategory implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -27,11 +32,13 @@ public class ProductCategory implements Serializable {
 	private String description;
 
 	@ManyToOne
-	@JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
+	@JoinColumn(name = "product_id", nullable = false)
+	@JsonBackReference(value = "productReference") // Evitar la referencia circular en la serialización
 	private Product product;
 
 	@ManyToOne
-	@JoinColumn(name = "category_id", referencedColumnName = "id", nullable = false)
+	@JoinColumn(name = "category_id", nullable = false)
+	@JsonBackReference(value = "categoryReference") // Evitar la referencia circular en la serialización
 	private Category category;
 
 	public ProductCategory() {
@@ -70,4 +77,9 @@ public class ProductCategory implements Serializable {
 		this.category = category;
 	}
 
+	@Override
+	public String toString() {
+		return "ProductCategory [id=" + id + ", description=" + description + ", product=" + product + ", category="
+				+ category + "]";
+	}
 }

@@ -6,14 +6,13 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
 
@@ -31,13 +30,12 @@ public class Product implements Serializable {
 	@Column(name = "name")
 	private String name;
 
-	@ManyToMany
-	@JoinTable(name = "product_category", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
-	@JsonManagedReference // Indica que este es el lado "principal" de la referencia
-	private Set<Category> categories;
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonManagedReference(value = "productReference") // Indica que este es el lado "principal" de la referencia
+	private Set<ProductCategory> productCategories;
 
 	public Product() {
-		this.categories = new HashSet<>();
+		this.productCategories = new HashSet<>();
 	}
 
 	public Long getId() {
@@ -56,11 +54,16 @@ public class Product implements Serializable {
 		this.name = name;
 	}
 
-	public Set<Category> getCategories() {
-		return categories;
+	public Set<ProductCategory> getProductCategories() {
+		return productCategories;
 	}
 
-	public void setCategories(Set<Category> categories) {
-		this.categories = categories;
+	public void setProductCategories(Set<ProductCategory> productCategories) {
+		this.productCategories = productCategories;
+	}
+
+	@Override
+	public String toString() {
+		return "Product [id=" + id + ", name=" + name + ", productCategories=" + productCategories + "]";
 	}
 }

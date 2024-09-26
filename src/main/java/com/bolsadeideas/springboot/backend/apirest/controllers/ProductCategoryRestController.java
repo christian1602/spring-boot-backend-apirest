@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bolsadeideas.springboot.backend.apirest.models.entity.Category;
 import com.bolsadeideas.springboot.backend.apirest.models.entity.Product;
 import com.bolsadeideas.springboot.backend.apirest.models.entity.ProductCategory;
+import com.bolsadeideas.springboot.backend.apirest.models.services.ICategoryValidationService;
 import com.bolsadeideas.springboot.backend.apirest.models.services.IProductCategoryService;
+import com.bolsadeideas.springboot.backend.apirest.models.services.IProductValidationService;
 
 import jakarta.validation.Valid;
 
@@ -32,9 +34,22 @@ import jakarta.validation.Valid;
 public class ProductCategoryRestController {
 
 	private final IProductCategoryService productCategoryService;
+	private final IProductValidationService productValidationService;
+	private final ICategoryValidationService categoryValidationService;
 
-	public ProductCategoryRestController(IProductCategoryService productCategoryService) {
+	public ProductCategoryRestController(
+			IProductCategoryService productCategoryService, 
+			IProductValidationService productValidationService, 
+			ICategoryValidationService categoryValidationService
+	) {
 		this.productCategoryService = productCategoryService;
+		this.productValidationService = productValidationService;
+		this.categoryValidationService = categoryValidationService;
+	}
+	
+	@GetMapping("/product_category")
+	public List<ProductCategory> index() {
+		return this.productCategoryService.findAll();
 	}
 
 	@GetMapping("/product_category/{id}")
@@ -73,6 +88,16 @@ public class ProductCategoryRestController {
 			response.put("errors", errors);
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
+		
+		ResponseEntity<?> productValidationResponse = this.productValidationService.validateProduct(productCategory, response);
+		if (productValidationResponse != null) {
+			return productValidationResponse;
+		}
+		
+		ResponseEntity<?> categoryValidationResponse = this.categoryValidationService.validateCategory(productCategory, response);
+		if (categoryValidationResponse != null) {
+			return categoryValidationResponse;
+		}
 
 		try {
 			nuevoProductCategory = this.productCategoryService.save(productCategory);
@@ -82,7 +107,7 @@ public class ProductCategoryRestController {
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		response.put("mensaje", "¡El cliente ha sido creado con éxito!");
+		response.put("mensaje", "¡El ProductCategory ha sido creado con éxito!");
 		response.put("productCategory", nuevoProductCategory);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
@@ -109,6 +134,16 @@ public class ProductCategoryRestController {
 			response.put("mensaje", "Error: No se pudo editar, el ProductCategory con el ID: ".concat(id.toString())
 					.concat(" no existe en la base de datos"));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+		}
+		
+		ResponseEntity<?> productValidationResponse = this.productValidationService.validateProduct(productCategory, response);
+		if (productValidationResponse != null) {
+			return productValidationResponse;
+		}
+		
+		ResponseEntity<?> categoryValidationResponse = this.categoryValidationService.validateCategory(productCategory, response);
+		if (categoryValidationResponse != null) {
+			return categoryValidationResponse;
 		}
 
 		try {
