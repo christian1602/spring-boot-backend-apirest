@@ -30,13 +30,13 @@ public class CategoryServiceImpl implements ICategoryService {
 	}
 
 	@Override
-	@Transactional()
+	@Transactional
 	public Category save(Category category) {
 		return this.categoryDao.save(category);
 	}
 
 	@Override
-	@Transactional()
+	@Transactional
 	public void delete(Long id) {
 		this.categoryDao.deleteById(id);
 	}

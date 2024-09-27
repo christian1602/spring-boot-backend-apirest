@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.bolsadeideas.springboot.backend.apirest.models.entity.Post;
 import com.bolsadeideas.springboot.backend.apirest.models.entity.User;
 
 @Service
@@ -15,17 +14,17 @@ public class UserValidationServiceImpl implements IUserValidationService {
 	
 	private final IUserService userService;
 
-	public UserValidationServiceImpl(IUserService userService) {		
+	public UserValidationServiceImpl(IUserService userService) {
 		this.userService = userService;
 	}
 
 	@Override
-	public ResponseEntity<?> validateUser(Post post, Map<String, Object> response) {		
+	public ResponseEntity<?> validateUser(User user, Map<String, Object> response) {		
 		User userActual = null;
 		Long idUserActual = 0L;
 		
 		try {
-			idUserActual = post.getUser().getId();
+			idUserActual = user.getId();
 			userActual = this.userService.findById(idUserActual);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar la consulta en la base de datos");

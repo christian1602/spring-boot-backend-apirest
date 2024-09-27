@@ -4,9 +4,9 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 
-import com.bolsadeideas.springboot.backend.apirest.models.entity.Post;
+import com.bolsadeideas.springboot.backend.apirest.models.entity.User;
 
 public interface IUserValidationService {
 
-	ResponseEntity<?> validateUser(Post post, Map<String,Object>response);
+	ResponseEntity<?> validateUser(User user, Map<String,Object>response);
 }

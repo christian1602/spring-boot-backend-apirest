@@ -122,7 +122,7 @@ public class PostRestController {
 			response.put("errors", errors);
 		}
 		
-		ResponseEntity<?> validationResponse = this.userValidationService.validateUser(post, response);
+		ResponseEntity<?> validationResponse = this.userValidationService.validateUser(post.getUser(), response);
 		if (validationResponse != null) {
 			return validationResponse;
 		}
@@ -163,7 +163,7 @@ public class PostRestController {
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 		
-		ResponseEntity<?> validationResponse = this.userValidationService.validateUser(post, response);
+		ResponseEntity<?> validationResponse = this.userValidationService.validateUser(post.getUser(), response);
 		if (validationResponse != null) {
 			return validationResponse;
 		}		
