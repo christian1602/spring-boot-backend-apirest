@@ -19,9 +19,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bolsadeideas.springboot.backend.apirest.dto.PostDto;
 import com.bolsadeideas.springboot.backend.apirest.models.entity.Post;
 import com.bolsadeideas.springboot.backend.apirest.models.entity.User;
 import com.bolsadeideas.springboot.backend.apirest.models.services.IPostApiService;
+import com.bolsadeideas.springboot.backend.apirest.models.services.IPostCustomService;
 import com.bolsadeideas.springboot.backend.apirest.models.services.IPostService;
 import com.bolsadeideas.springboot.backend.apirest.models.services.IUserValidationService;
 
@@ -33,12 +35,20 @@ import jakarta.validation.Valid;
 public class PostRestController {
 
 	private final IPostService postService;		
-	private final IUserValidationService userValidationService;
 	private final IPostApiService postApiService;
+	private final IPostCustomService postCustomService;
+	private final IUserValidationService userValidationService;
 
-	public PostRestController(IPostService postService, IPostApiService postApiService, IUserValidationService userValidationService) {
+	public PostRestController(
+			IPostService postService, 
+			IPostApiService postApiService,
+			IPostCustomService postCustomService,
+			IUserValidationService userValidationService 
+			
+	) {
 		this.postService = postService;
-		this.postApiService = postApiService;	
+		this.postApiService = postApiService;			
+		this.postCustomService = postCustomService;
 		this.userValidationService = userValidationService;
 	}
 	
@@ -69,6 +79,11 @@ public class PostRestController {
 	@GetMapping("/posts")
 	public List<Post> index() {
 		return this.postService.findAll();
+	}
+	
+	@GetMapping("/posts-with-userid")
+	public List<PostDto> findAllPostsWithUserId() {
+		return this.postCustomService.getAllPostsWithUserId();
 	}
 
 	@GetMapping("/posts/{id}")

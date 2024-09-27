@@ -39,5 +39,5 @@ public class PostServiceImpl implements IPostService {
 	@Transactional
 	public void delete(Long id) {
 		this.postDao.deleteById(id);
-	}
+	}	
 }

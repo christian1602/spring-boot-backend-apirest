@@ -10,4 +10,5 @@ public interface IPostService {
 	Post findById(Long id);
 	Post save(Post post);
 	void delete(Long id);
+	// List<PostDto> findAllPostsWithUserId();
 }
