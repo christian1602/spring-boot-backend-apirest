@@ -11,10 +11,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "product_category")
@@ -27,18 +26,16 @@ public class ProductCategory implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@NotEmpty
+	@NotBlank
 	@Column(name = "description")
 	private String description;
 
-	@ManyToOne
-	@JoinColumn(name = "product_id", nullable = false)
-	@JsonBackReference(value = "productReference") // Evitar la referencia circular en la serialización
+	@ManyToOne(targetEntity = Product.class)	
+	@JsonBackReference(value = "productReference")
 	private Product product;
 
-	@ManyToOne
-	@JoinColumn(name = "category_id", nullable = false)
-	@JsonBackReference(value = "categoryReference") // Evitar la referencia circular en la serialización
+	@ManyToOne(targetEntity = Category.class)	
+	@JsonBackReference(value = "categoryReference")
 	private Category category;
 
 	public ProductCategory() {

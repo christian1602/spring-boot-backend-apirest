@@ -85,7 +85,7 @@ public class CategoryRestController {
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		response.put("mensaje", "¡El Category ha sido creado con éxito!");
+		response.put("mensaje", "¡La categoria ha sido creada con éxito!");
 		response.put("categoria", nuevaCategoria);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
@@ -141,6 +141,8 @@ public class CategoryRestController {
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 
+		// TODO: ELIMINAR TODOS LOS PRODUCTOS ASOCIADOS EN PRODUCTCATEGORY
+		
 		try {
 			this.categoryService.delete(id);
 		} catch (DataAccessException e) {

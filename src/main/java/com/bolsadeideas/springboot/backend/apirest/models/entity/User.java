@@ -1,12 +1,10 @@
 package com.bolsadeideas.springboot.backend.apirest.models.entity;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,44 +12,36 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "users")
-public class User implements Serializable {
-
-	private static final long serialVersionUID = 1L;
+public class User {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@NotEmpty
-	@Column(name = "name")
+	@NotBlank
+	@Column(name = "name", nullable = false)
 	private String name;
 
-	@NotEmpty
-	@Column(name = "username")
+	@NotBlank
+	@Column(name = "username", nullable = false)
 	private String username;
 
-	@NotEmpty
+	@NotBlank
 	@Email
-	@Column(name = "email", unique = true)
+	@Column(name = "email", unique = true, nullable = false)
 	private String email;
 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)	
+	@OneToMany(targetEntity = Post.class, fetch = FetchType.LAZY, mappedBy = "user")
 	@JsonManagedReference
-	private List<Post> posts;
-	
-	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JsonManagedReference
-	private Profile profile;
+	private List<Post> posts = new ArrayList<>();
 
-	public User() {
-		this.posts = new ArrayList<>();
+	public User() {		
 	}
 
 	public Long getId() {
@@ -94,16 +84,9 @@ public class User implements Serializable {
 		this.posts = posts;
 	}
 
-	public Profile getProfile() {
-		return profile;
-	}
-
-	public void setProfile(Profile profile) {
-		this.profile = profile;
-	}
-
 	@Override
 	public String toString() {
-		return "User [id=" + id + ", name=" + name + ", username=" + username + ", email=" + email + "]";
+		return "User [id=" + id + ", name=" + name + ", username=" + username + ", email=" + email + ", posts=" + posts
+				+ "]";
 	}
 }

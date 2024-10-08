@@ -1,7 +1,5 @@
 package com.bolsadeideas.springboot.backend.apirest.models.entity;
 
-import java.io.Serializable;
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
@@ -12,28 +10,26 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "posts")
-public class Post implements Serializable {
-
-	private static final long serialVersionUID = 1L;
+public class Post {	
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@NotEmpty
-	@Column(name = "title")
+	@NotBlank
+	@Column(name = "title", nullable = false)
 	private String title;
 
-	@NotEmpty
-	@Column(name = "body")
+	@NotBlank
+	@Column(name = "body", nullable = false)
 	private String body;
 
-	@ManyToOne
-	@JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+	@ManyToOne(targetEntity = User.class)
+	@JoinColumn(nullable = false)
 	@JsonBackReference
 	private User user;
 

@@ -1,3 +1,4 @@
+/*
 package com.bolsadeideas.springboot.backend.apirest.models.services;
 
 import java.util.Map;
@@ -41,3 +42,4 @@ public class CategoryValidationServiceImpl implements ICategoryValidationService
 		return null;
 	}
 }
+*/

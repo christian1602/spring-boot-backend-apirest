@@ -23,7 +23,6 @@ import com.bolsadeideas.springboot.backend.apirest.models.entity.Profile;
 import com.bolsadeideas.springboot.backend.apirest.models.entity.User;
 import com.bolsadeideas.springboot.backend.apirest.models.services.IProfileService;
 import com.bolsadeideas.springboot.backend.apirest.models.services.IUserService;
-import com.bolsadeideas.springboot.backend.apirest.models.services.IUserValidationService;
 
 import jakarta.validation.Valid;
 
@@ -34,12 +33,10 @@ public class ProfileRestController {
 
 	private final IProfileService profileService;
 	private final IUserService userService;
-	private final IUserValidationService userValidationService;
 
-	public ProfileRestController(IProfileService profileService, IUserService userService, IUserValidationService userValidationService) {
+	public ProfileRestController(IProfileService profileService, IUserService userService) {
 		this.profileService = profileService;
 		this.userService = userService;
-		this.userValidationService = userValidationService;
 	}
 
 	@GetMapping("/profiles")
@@ -72,7 +69,7 @@ public class ProfileRestController {
 
 	@PostMapping("/profiles")
 	public ResponseEntity<?> create(@Valid @RequestBody Profile profile, BindingResult result) {
-		Profile nuevoPerfi = null;
+		Profile nuevoPerfil = null;
 		Map<String, Object> response = new HashMap<>();
 
 		if (result.hasErrors()) {
@@ -82,23 +79,29 @@ public class ProfileRestController {
 
 			response.put("errors", errors);
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
-		}
-
-		ResponseEntity<?> validationResponse = this.userValidationService.validateUser(profile.getUser(), response);
-		if (validationResponse != null) {
-			return validationResponse;
-		}
+		}		
 		
 		try {
-			nuevoPerfi = this.profileService.save(profile);
+			// RECUPEAR EL USER DESDE LA BASE DE DATOS			
+			User userEncontrado = this.userService.findById(profile.getUser().getId());
+			
+			if (userEncontrado == null) {
+				response.put("mensaje", "Error: No se pudo crear el perfil para el usuario con el ID: ".concat(profile.getUser().getId().toString())
+						.concat(" porque no existe en la base de datos"));
+				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			}	
+			
+			// TODO: VALIDAR QUE EL USUARIO NO ESTE YA ASOCIADO AL PERFIL
+			profile.setUser(userEncontrado);
+			nuevoPerfil = this.profileService.save(profile);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar el insert en la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		response.put("mensaje", "¡El Profile ha sido creado con éxito!");
-		response.put("perfil", nuevoPerfi);
+		response.put("mensaje", "¡El perfil ha sido creado con éxito!");
+		response.put("perfil", nuevoPerfil);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
@@ -123,20 +126,22 @@ public class ProfileRestController {
 			response.put("mensaje", "Error: No se pudo editar, el Profile con el ID: ".concat(id.toString())
 					.concat(" no existe en la base de datos"));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
-		}
-		
-		ResponseEntity<?> validationResponse = this.userValidationService.validateUser(profile.getUser(), response);
-		if (validationResponse != null) {
-			return validationResponse;
-		}
+		}		
 
 		try {
-			User usuario = new User();
-			usuario.setId(profile.getUser().getId());
-
+			// RECUPEAR EL USER DESDE LA BASE DE DATOS			
+			User userEncontrado = this.userService.findById(profile.getUser().getId());
+			
+			if (userEncontrado == null) {
+				response.put("mensaje", "Error: No se pudo editar el perfil para el usuario con el ID: ".concat(profile.getUser().getId().toString())
+						.concat(" porque no existe en la base de datos"));
+				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			}	
+			
+			// TODO: VALIDAR QUE EL USUARIO NO ESTE YA ASOCIADO AL PERFIL.
 			perfilActual.setBio(profile.getBio());
-			perfilActual.setWebsite(profile.getWebsite());
-			perfilActual.setUser(usuario);
+			perfilActual.setWebsite(profile.getWebsite());			
+			perfilActual.setUser(userEncontrado);
 
 			perfilActualizado = this.profileService.save(perfilActual);
 		} catch (DataAccessException e) {
@@ -156,7 +161,6 @@ public class ProfileRestController {
 		Map<String, Object> response = new HashMap<>();
 
 		Profile perfil = this.profileService.findById(id);
-		System.out.println("perfil encontrado => " + perfil);
 		
 		if (perfil == null) {
 			response.put("mensaje", "Error: no se pudo eliminar, el Profile con ID: "
@@ -165,15 +169,6 @@ public class ProfileRestController {
 		}
 
 		try {
-			// SOLO EN RELACIONES DE ONE TOM ONE
-			// Romper la relacion entre el User y el Profile
-			User user = perfil.getUser();
-			
-			if (user != null) {
-				user.setProfile(null); // Rompe la referencia
-				this.userService.save(user); // Guarda el User actualizado sin Profile
-				
-			}
 			this.profileService.delete(id);			
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al eliminar el Perfil de la base de datos");
@@ -181,7 +176,7 @@ public class ProfileRestController {
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		response.put("mensaje", "¡El Profile ha sido eliminado con éxito!");
+		response.put("mensaje", "¡El Perfil ha sido eliminado con éxito!");
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}

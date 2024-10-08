@@ -1,41 +1,37 @@
 package com.bolsadeideas.springboot.backend.apirest.models.entity;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "categories")
-public class Category implements Serializable {
-
-	private static final long serialVersionUID = 1L;
+public class Category {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@NotEmpty
-	@Column(name = "name")
+	@NotBlank
+	@Column(name = "name", nullable = false)
 	private String name;
+		
+	@OneToMany(targetEntity = ProductCategory.class, fetch = FetchType.LAZY, mappedBy = "category")
+	@JsonManagedReference(value = "categoryReference")
+	private Set<ProductCategory> productCategories = new HashSet<>();
 
-	@OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference(value = "categoryReference") // Indica que este es el lado "principal" de la referencia
-	private Set<ProductCategory> productCategories;
-
-	public Category() {
-		this.productCategories = new HashSet<>();
+	public Category() {		
 	}
 
 	public Long getId() {

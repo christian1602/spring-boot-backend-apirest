@@ -1,9 +1,6 @@
 package com.bolsadeideas.springboot.backend.apirest.models.entity;
 
-import java.io.Serializable;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
-
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -12,31 +9,28 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "profiles")
-public class Profile implements Serializable {
-	
-	private static final long serialVersionUID = 1L;
-	
+public class Profile {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
-	@NotEmpty
-	@Column(name = "bio")
+
+	@NotBlank
+	@Column(name = "bio", nullable = false)
 	private String bio;
-	
-	@NotEmpty
-	@Column(name = "websit")	
+
+	@NotBlank
+	@Column(name = "website", nullable = false)
 	private String website;
 	
-	@OneToOne
-	@JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
-	@JsonBackReference
+	@OneToOne(targetEntity = User.class, cascade = CascadeType.PERSIST)
+	@JoinColumn(nullable = false)
 	private User user;
-	
+
 	public Profile() {
 	}
 

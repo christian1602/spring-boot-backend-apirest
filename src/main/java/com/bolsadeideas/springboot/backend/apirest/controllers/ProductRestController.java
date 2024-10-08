@@ -64,8 +64,7 @@ public class ProductRestController {
 	}
 
 	@PostMapping("/products")
-	public ResponseEntity<?> create(@Valid @RequestBody Product product, BindingResult result) {
-		System.out.println("product => " + product);
+	public ResponseEntity<?> create(@Valid @RequestBody Product product, BindingResult result) {		
 		Product nuevoProducto = null;
 		Map<String, Object> response = new HashMap<>();
 
@@ -86,7 +85,7 @@ public class ProductRestController {
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		response.put("mensaje", "¡El Product ha sido creado con éxito!");
+		response.put("mensaje", "¡El producto ha sido creado con éxito!");
 		response.put("producto", nuevoProducto);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
@@ -140,7 +139,8 @@ public class ProductRestController {
 					.concat(id.toString().concat(" no existe en la base de datos!")));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
-
+		
+		// TODO: ELIMINAR TODOS LOS PRODUCTOS ASOCIADOS EN PRODUCTCATEGORY
 		try {
 			this.productService.delete(id);
 		} catch (DataAccessException e) {

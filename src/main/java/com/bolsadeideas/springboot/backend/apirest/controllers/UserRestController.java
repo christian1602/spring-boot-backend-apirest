@@ -74,6 +74,7 @@ public class UserRestController {
 					.collect(Collectors.toList());
 
 			response.put("errors", errors);
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 
 		try {
@@ -143,6 +144,7 @@ public class UserRestController {
 		}
 
 		try {
+			// TODO: VALIDAR SI EL USUARIO ESTA SIENDO USADO POR UN PERFIL
 			this.userService.delete(id);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al eliminar el User de la base de datos");

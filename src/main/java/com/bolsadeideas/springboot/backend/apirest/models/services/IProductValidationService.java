@@ -1,3 +1,4 @@
+/*
 package com.bolsadeideas.springboot.backend.apirest.models.services;
 
 import java.util.Map;
@@ -9,3 +10,5 @@ import com.bolsadeideas.springboot.backend.apirest.models.entity.ProductCategory
 public interface IProductValidationService {
 	ResponseEntity<?> validateProduct(ProductCategory productCategory, Map<String,Object>response);
 }
+
+*/

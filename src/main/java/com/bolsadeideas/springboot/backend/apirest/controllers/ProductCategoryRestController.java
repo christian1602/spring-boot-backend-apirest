@@ -22,9 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bolsadeideas.springboot.backend.apirest.models.entity.Category;
 import com.bolsadeideas.springboot.backend.apirest.models.entity.Product;
 import com.bolsadeideas.springboot.backend.apirest.models.entity.ProductCategory;
-import com.bolsadeideas.springboot.backend.apirest.models.services.ICategoryValidationService;
+import com.bolsadeideas.springboot.backend.apirest.models.services.ICategoryService;
 import com.bolsadeideas.springboot.backend.apirest.models.services.IProductCategoryService;
-import com.bolsadeideas.springboot.backend.apirest.models.services.IProductValidationService;
+import com.bolsadeideas.springboot.backend.apirest.models.services.IProductService;
 
 import jakarta.validation.Valid;
 
@@ -34,17 +34,13 @@ import jakarta.validation.Valid;
 public class ProductCategoryRestController {
 
 	private final IProductCategoryService productCategoryService;
-	private final IProductValidationService productValidationService;
-	private final ICategoryValidationService categoryValidationService;
+	private final IProductService productService;
+	private final ICategoryService categoryService;
 
-	public ProductCategoryRestController(
-			IProductCategoryService productCategoryService, 
-			IProductValidationService productValidationService, 
-			ICategoryValidationService categoryValidationService
-	) {
+	public ProductCategoryRestController(IProductCategoryService productCategoryService, IProductService productService, ICategoryService categoryService) {
 		this.productCategoryService = productCategoryService;
-		this.productValidationService = productValidationService;
-		this.categoryValidationService = categoryValidationService;
+		this.productService = productService;
+		this.categoryService = categoryService;
 	}
 	
 	@GetMapping("/product_category")
@@ -89,17 +85,45 @@ public class ProductCategoryRestController {
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 		
-		ResponseEntity<?> productValidationResponse = this.productValidationService.validateProduct(productCategory, response);
-		if (productValidationResponse != null) {
-			return productValidationResponse;
+		Product productActual = null;
+		Long idProductActual = 0L;
+
+		try {
+			idProductActual = productCategory.getProduct().getId();
+			productActual = this.productService.findById(idProductActual);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al realizar la consulta en la base de datos");
+			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		if (productActual == null) {
+			response.put("mensaje", "El Product con el ID: ".concat(idProductActual.toString())
+					.concat(" no existe en la base de datos"));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 		
-		ResponseEntity<?> categoryValidationResponse = this.categoryValidationService.validateCategory(productCategory, response);
-		if (categoryValidationResponse != null) {
-			return categoryValidationResponse;
+		Category categoryActual = null;
+		Long idCategoryActual = 0L;
+
+		try {
+			idCategoryActual = productCategory.getCategory().getId();
+			categoryActual = this.categoryService.findById(idCategoryActual);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al realizar la consulta en la base de datos");
+			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		if (categoryActual == null) {
+			response.put("mensaje", "El Category con el ID: ".concat(idCategoryActual.toString())
+					.concat(" no existe en la base de datos"));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 
 		try {
+			productCategory.setProduct(productActual);
+			productCategory.setCategory(categoryActual);
 			nuevoProductCategory = this.productCategoryService.save(productCategory);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar el insert en la base de datos");
@@ -136,26 +160,46 @@ public class ProductCategoryRestController {
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 		
-		ResponseEntity<?> productValidationResponse = this.productValidationService.validateProduct(productCategory, response);
-		if (productValidationResponse != null) {
-			return productValidationResponse;
+		Product productActual = null;
+		Long idProductActual = 0L;
+
+		try {
+			idProductActual = productCategory.getProduct().getId();
+			productActual = this.productService.findById(idProductActual);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al realizar la consulta en la base de datos");
+			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		if (productActual == null) {
+			response.put("mensaje", "El Product con el ID: ".concat(idProductActual.toString())
+					.concat(" no existe en la base de datos"));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 		
-		ResponseEntity<?> categoryValidationResponse = this.categoryValidationService.validateCategory(productCategory, response);
-		if (categoryValidationResponse != null) {
-			return categoryValidationResponse;
+		Category categoryActual = null;
+		Long idCategoryActual = 0L;
+
+		try {
+			idCategoryActual = productCategory.getCategory().getId();
+			categoryActual = this.categoryService.findById(idCategoryActual);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al realizar la consulta en la base de datos");
+			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		if (categoryActual == null) {
+			response.put("mensaje", "El Category con el ID: ".concat(idCategoryActual.toString())
+					.concat(" no existe en la base de datos"));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 
 		try {
-			Product product = new Product();
-			product.setId(productCategory.getProduct().getId());
-
-			Category category = new Category();
-			category.setId(productCategory.getCategory().getId());
-
 			productCategoryActual.setDescription(productCategory.getDescription());
-			productCategoryActual.setProduct(product);
-			productCategoryActual.setCategory(category);
+			productCategoryActual.setProduct(productActual);
+			productCategoryActual.setCategory(categoryActual);
 
 			productCategoryActualizado = this.productCategoryService.save(productCategoryActual);
 		} catch (DataAccessException e) {

@@ -25,7 +25,7 @@ import com.bolsadeideas.springboot.backend.apirest.models.entity.User;
 import com.bolsadeideas.springboot.backend.apirest.models.services.IPostApiService;
 import com.bolsadeideas.springboot.backend.apirest.models.services.IPostCustomService;
 import com.bolsadeideas.springboot.backend.apirest.models.services.IPostService;
-import com.bolsadeideas.springboot.backend.apirest.models.services.IUserValidationService;
+import com.bolsadeideas.springboot.backend.apirest.models.services.IUserService;
 
 import jakarta.validation.Valid;
 
@@ -37,19 +37,19 @@ public class PostRestController {
 	private final IPostService postService;		
 	private final IPostApiService postApiService;
 	private final IPostCustomService postCustomService;
-	private final IUserValidationService userValidationService;
+	private final IUserService userService;	
 
 	public PostRestController(
 			IPostService postService, 
 			IPostApiService postApiService,
 			IPostCustomService postCustomService,
-			IUserValidationService userValidationService 
+			IUserService userService
 			
 	) {
 		this.postService = postService;
 		this.postApiService = postApiService;			
 		this.postCustomService = postCustomService;
-		this.userValidationService = userValidationService;
+		this.userService = userService;		
 	}
 	
 	@GetMapping("/sync-posts")
@@ -120,14 +120,20 @@ public class PostRestController {
 					.collect(Collectors.toList());
 
 			response.put("errors", errors);
-		}
-		
-		ResponseEntity<?> validationResponse = this.userValidationService.validateUser(post.getUser(), response);
-		if (validationResponse != null) {
-			return validationResponse;
-		}
+		}		
 
-		try {			
+		try {
+			// RECUPEAR EL USER DESDE LA BASE DE DATOS
+			User userEncontrado = this.userService.findById(post.getUser().getId());
+			
+			if (userEncontrado == null) {
+				response.put("mensaje", "Error: No se pudo crear el post para el usuario con el ID: ".concat(post.getUser().getId().toString())
+						.concat(" porque no existe en la base de datos"));
+				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			}	
+			
+			// TODO: VALIDAR QUE EL USUARIO NO ESTE YA ASOCIADO AL POST
+			post.setUser(userEncontrado);
 			nuevoPost = this.postService.save(post);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar el insert en la base de datos");
@@ -162,19 +168,21 @@ public class PostRestController {
 					.concat(" no existe en la base de datos"));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
-		
-		ResponseEntity<?> validationResponse = this.userValidationService.validateUser(post.getUser(), response);
-		if (validationResponse != null) {
-			return validationResponse;
-		}		
 
 		try {
+			// RECUPEAR EL USER DESDE LA BASE DE DATOS
+			User userEncontrado = this.userService.findById(post.getUser().getId());
+			
+			if (userEncontrado == null) {
+				response.put("mensaje", "Error: No se pudo crear el post para el usuario con el ID: ".concat(post.getUser().getId().toString())
+						.concat(" porque no existe en la base de datos"));
+				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			}	
+			
+			// TODO: VALIDAR QUE EL USUARIO NO ESTE YA ASOCIADO AL POST
 			postActual.setTitle(post.getTitle());
 			postActual.setBody(post.getBody());
-			
-			User userActualizado = new User();
-			userActualizado.setId(post.getUser().getId());
-			postActual.setUser(userActualizado);
+			postActual.setUser(userEncontrado);
 
 			postActualizado = this.postService.save(postActual);
 		} catch (DataAccessException e) {
