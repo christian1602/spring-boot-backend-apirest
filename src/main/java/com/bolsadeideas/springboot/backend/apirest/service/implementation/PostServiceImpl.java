@@ -10,7 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.bolsadeideas.springboot.backend.apirest.mappers.PostMapper;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.PostEntity;
+import com.bolsadeideas.springboot.backend.apirest.persistence.entity.UserEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IPostRepository;
+import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IUserRepository;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.PostDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IPostService;
 
@@ -18,10 +20,12 @@ import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IPostServi
 public class PostServiceImpl implements IPostService {
 
 	private final IPostRepository postRepository;
+	private final IUserRepository userRepository;
 	private final PostMapper postMapper;
 
-	public PostServiceImpl(IPostRepository postRepository, PostMapper postMapper) {
+	public PostServiceImpl(IPostRepository postRepository, IUserRepository userRepository, PostMapper postMapper) {
 		this.postRepository = postRepository;
+		this.userRepository = userRepository;
 		this.postMapper = postMapper;
 	}
 
@@ -45,6 +49,15 @@ public class PostServiceImpl implements IPostService {
 	@Transactional
 	public PostDTO save(PostDTO postDTO) {
 		PostEntity postEntity = this.postMapper.postDTOTOPostEntity(postDTO);
+		
+		Optional<UserEntity> userEntityOptional = this.userRepository.findById(postDTO.getUserId());
+		
+		if (!userEntityOptional.isPresent()) {
+			return null;
+		}
+		
+		postEntity.setUser(userEntityOptional.get());
+		
 		PostEntity postEntitySaved = this.postRepository.save(postEntity);
 		return this.postMapper.postEntityTOPostDTO(postEntitySaved);
 	}

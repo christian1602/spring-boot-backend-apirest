@@ -124,16 +124,16 @@ public class PostRestController {
 
 		try {
 			// RECUPEAR EL USER DESDE LA BASE DE DATOS		
-			UserDTO userDTOEncontrado = this.userService.findById(postDTO.getUser().getId());
+			UserDTO userDTOEncontrado = this.userService.findById(postDTO.getUserId());
 			
 			if (userDTOEncontrado == null) {
-				response.put("mensaje", "Error: No se pudo crear el post para el usuario con el ID: ".concat(postDTO.getUser().getId().toString())
+				response.put("mensaje", "Error: No se pudo crear el post para el usuario con el ID: ".concat(postDTO.getUserId().toString())
 						.concat(" porque no existe en la base de datos"));
 				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 			}	
 			
 			// TODO: VALIDAR QUE EL USUARIO NO ESTE YA ASOCIADO AL POST
-			postDTO.setUser(userDTOEncontrado);
+			// postDTO.setUser(userDTOEncontrado);			
 			nuevoPostDTO = this.postService.save(postDTO);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar el insert en la base de datos");
@@ -171,10 +171,10 @@ public class PostRestController {
 
 		try {
 			// RECUPEAR EL USER DESDE LA BASE DE DATOS
-			UserDTO userDTOEncontrado = this.userService.findById(postDTO.getUser().getId());
+			UserDTO userDTOEncontrado = this.userService.findById(postDTO.getUserId());
 			
 			if (userDTOEncontrado == null) {
-				response.put("mensaje", "Error: No se pudo crear el post para el usuario con el ID: ".concat(postDTO.getUser().getId().toString())
+				response.put("mensaje", "Error: No se pudo crear el post para el usuario con el ID: ".concat(postDTO.getUserId().toString())
 						.concat(" porque no existe en la base de datos"));
 				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 			}	
@@ -182,7 +182,8 @@ public class PostRestController {
 			// TODO: VALIDAR QUE EL USUARIO NO ESTE YA ASOCIADO AL POST
 			postDTOActual.setTitle(postDTO.getTitle());
 			postDTOActual.setBody(postDTO.getBody());
-			postDTOActual.setUser(userDTOEncontrado);
+			postDTOActual.setUserId(postDTO.getUserId());
+			// postDTOActual.setUser(userDTOEncontrado);
 
 			postDTOActualizado = this.postService.save(postDTOActual);
 		} catch (DataAccessException e) {

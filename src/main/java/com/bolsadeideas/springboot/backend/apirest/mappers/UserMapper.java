@@ -7,7 +7,7 @@ import org.mapstruct.factory.Mappers;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.UserEntity;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.UserDTO;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface UserMapper {
 
 	UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);

@@ -83,7 +83,8 @@ public class ProfileRestController {
 		
 		try {
 			// RECUPEAR EL USER DESDE LA BASE DE DATOS			
-			UserEntity userEncontrado = this.userService.findById(profile.getUser().getId());
+			// UserEntity userEncontrado = this.userService.findById(profile.getUser().getId());
+			UserEntity userEncontrado = null;
 			
 			if (userEncontrado == null) {
 				response.put("mensaje", "Error: No se pudo crear el perfil para el usuario con el ID: ".concat(profile.getUser().getId().toString())
@@ -130,7 +131,8 @@ public class ProfileRestController {
 
 		try {
 			// RECUPEAR EL USER DESDE LA BASE DE DATOS			
-			UserEntity userEncontrado = this.userService.findById(profile.getUser().getId());
+			// UserEntity userEncontrado = this.userService.findById(profile.getUser().getId());
+			UserEntity userEncontrado = null;
 			
 			if (userEncontrado == null) {
 				response.put("mensaje", "Error: No se pudo editar el perfil para el usuario con el ID: ".concat(profile.getUser().getId().toString())

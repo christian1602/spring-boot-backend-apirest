@@ -2,7 +2,6 @@ package com.bolsadeideas.springboot.backend.apirest.presentation.dto;
 
 import java.util.Objects;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -17,18 +16,17 @@ public class PostDTO {
 	private String body;
 
 	@NotNull
-	@Valid
-	private UserDTO user;
+	private Long userId;
 
 	public PostDTO() {
 
 	}
 
-	public PostDTO(Long id, String title, String body, UserDTO user) {
+	public PostDTO(Long id, String title, String body, Long userId) {
 		this.id = id;
 		this.title = title;
 		this.body = body;
-		this.user = user;
+		this.userId = userId;
 	}
 
 	public Long getId() {
@@ -55,22 +53,22 @@ public class PostDTO {
 		this.body = body;
 	}
 
-	public UserDTO getUser() {
-		return user;
+	public Long getUserId() {
+		return userId;
 	}
 
-	public void setUser(UserDTO user) {
-		this.user = user;
+	public void setUserId(Long userId) {
+		this.userId = userId;
 	}
 
 	@Override
 	public String toString() {
-		return "PostDTO [id=" + id + ", title=" + title + ", body=" + body + ", user=" + user + "]";
+		return "PostDTO [id=" + id + ", title=" + title + ", body=" + body + ", userId=" + userId + "]";
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(body, id, title, user);
+		return Objects.hash(body, id, title, userId);
 	}
 
 	@Override
@@ -83,6 +81,6 @@ public class PostDTO {
 			return false;
 		PostDTO other = (PostDTO) obj;
 		return Objects.equals(body, other.body) && Objects.equals(id, other.id) && Objects.equals(title, other.title)
-				&& Objects.equals(user, other.user);
+				&& Objects.equals(userId, other.userId);
 	}
 }
