@@ -1,6 +1,6 @@
 package com.bolsadeideas.springboot.backend.apirest.persistence.entity;
 
-import java.io.Serializable;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
@@ -13,33 +13,28 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "product_category")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-public class ProductCategory implements Serializable {
-
-	private static final long serialVersionUID = 1L;
+public class ProductCategoryEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@NotBlank
 	@Column(name = "description")
 	private String description;
 
-	@ManyToOne(targetEntity = ProductEntity.class)	
+	@ManyToOne(targetEntity = ProductEntity.class)
 	@JsonBackReference(value = "productReference")
 	private ProductEntity product;
 
-	@ManyToOne(targetEntity = CategoryEntity.class)	
+	@ManyToOne(targetEntity = CategoryEntity.class)
 	@JsonBackReference(value = "categoryReference")
 	private CategoryEntity category;
 
-	public ProductCategory() {
-
+	public ProductCategoryEntity() {
 	}
 
 	public Long getId() {
@@ -76,7 +71,25 @@ public class ProductCategory implements Serializable {
 
 	@Override
 	public String toString() {
-		return "ProductCategory [id=" + id + ", description=" + description + ", product=" + product + ", category="
-				+ category + "]";
+		return "ProductCategory [id=" + id + ", description=" + description + ", product="
+				+ (product != null ? product.getName() : "null") + ", category="
+				+ (category != null ? category.getName() : "null") + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ProductCategoryEntity other = (ProductCategoryEntity) obj;
+		return Objects.equals(id, other.id);
 	}
 }

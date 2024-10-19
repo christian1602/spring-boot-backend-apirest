@@ -9,6 +9,7 @@ public interface IPostService {
 	List<PostDTO> findAll();
 	PostDTO findById(Long id);
 	PostDTO save(PostDTO postDTO);
+	PostDTO update(Long id, PostDTO postDTO);
 	void delete(Long id);
 	// List<PostDto> findAllPostsWithUserId();
 }

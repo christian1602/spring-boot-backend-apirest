@@ -33,14 +33,7 @@ public class PostEntity {
 	private UserEntity user;
 
 	public PostEntity() {
-	}
-
-	public PostEntity(Long id, String title, String body, UserEntity user) {
-		this.id = id;
-		this.title = title;
-		this.body = body;
-		this.user = user;
-	}
+	}	
 
 	public Long getId() {
 		return id;
@@ -76,12 +69,12 @@ public class PostEntity {
 
 	@Override
 	public String toString() {
-		return "PostEntity [id=" + id + ", title=" + title + ", body=" + body + ", user=" + user + "]";
+		return "PostEntity [id=" + id + ", title=" + title + ", body=" + body + ", user=" + (user != null ? user.getName() : "null")  + "]";
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(body, id, title, user);
+		return Objects.hash(id);
 	}
 
 	@Override
@@ -93,7 +86,6 @@ public class PostEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		PostEntity other = (PostEntity) obj;
-		return Objects.equals(body, other.body) && Objects.equals(id, other.id) && Objects.equals(title, other.title)
-				&& Objects.equals(user, other.user);
+		return Objects.equals(id, other.id);
 	}
 }

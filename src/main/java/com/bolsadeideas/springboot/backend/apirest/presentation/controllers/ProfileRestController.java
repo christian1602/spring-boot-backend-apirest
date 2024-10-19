@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bolsadeideas.springboot.backend.apirest.persistence.entity.ProfileEntity;
-import com.bolsadeideas.springboot.backend.apirest.persistence.entity.UserEntity;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProfileDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.UserDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IProfileService;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IUserService;
 
@@ -40,36 +40,36 @@ public class ProfileRestController {
 	}
 
 	@GetMapping("/profiles")
-	public List<ProfileEntity> index() {
+	public List<ProfileDTO> index() {
 		return this.profileService.findAll();
 	}
 
 	@GetMapping("/profiles/{id}")
 	public ResponseEntity<?> show(@PathVariable Long id) {
-		ProfileEntity perfil = null;
+		ProfileDTO perfilDTO = null;
 
 		Map<String, Object> response = new HashMap<>();
 
 		try {
-			perfil = this.profileService.findById(id);
+			perfilDTO = this.profileService.findById(id);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar la consulta en la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		if (perfil == null) {
+		if (perfilDTO == null) {
 			response.put("mensaje",
 					"El Profile con el ID: ".concat(id.toString()).concat(" no existe en la base de datos"));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 
-		return new ResponseEntity<ProfileEntity>(perfil, HttpStatus.OK);
+		return new ResponseEntity<ProfileDTO>(perfilDTO, HttpStatus.OK);
 	}
 
 	@PostMapping("/profiles")
-	public ResponseEntity<?> create(@Valid @RequestBody ProfileEntity profile, BindingResult result) {
-		ProfileEntity nuevoPerfil = null;
+	public ResponseEntity<?> create(@Valid @RequestBody ProfileDTO profileDTO, BindingResult result) {
+		ProfileDTO nuevoPerfilDTO = null;
 		Map<String, Object> response = new HashMap<>();
 
 		if (result.hasErrors()) {
@@ -79,22 +79,28 @@ public class ProfileRestController {
 
 			response.put("errors", errors);
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
-		}		
+		}
+		
+		UserDTO userDTOEncontrado = null;
 		
 		try {
-			// RECUPEAR EL USER DESDE LA BASE DE DATOS			
-			// UserEntity userEncontrado = this.userService.findById(profile.getUser().getId());
-			UserEntity userEncontrado = null;
-			
-			if (userEncontrado == null) {
-				response.put("mensaje", "Error: No se pudo crear el perfil para el usuario con el ID: ".concat(profile.getUser().getId().toString())
-						.concat(" porque no existe en la base de datos"));
-				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
-			}	
-			
+			// RECUPEAR EL USER DESDE LA BASE DE DATOS 
+			userDTOEncontrado = this.userService.findById(profileDTO.getUserId());
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al realizar la consulta en la base de datos");
+			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+		if (userDTOEncontrado == null) {
+			response.put("mensaje", "Error: No se pudo crear el perfil para el usuario con el ID: ".concat(profileDTO.getUserId().toString())
+					.concat(" porque no existe en la base de datos"));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+		}
+		
+		try {
 			// TODO: VALIDAR QUE EL USUARIO NO ESTE YA ASOCIADO AL PERFIL
-			profile.setUser(userEncontrado);
-			nuevoPerfil = this.profileService.save(profile);
+			nuevoPerfilDTO = this.profileService.save(profileDTO);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar el insert en la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
@@ -102,15 +108,15 @@ public class ProfileRestController {
 		}
 
 		response.put("mensaje", "¡El perfil ha sido creado con éxito!");
-		response.put("perfil", nuevoPerfil);
+		response.put("perfil", nuevoPerfilDTO);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/profiles/{id}")
-	public ResponseEntity<?> update(@Valid @RequestBody ProfileEntity profile, BindingResult result, @PathVariable Long id) {
-		ProfileEntity perfilActual = this.profileService.findById(id);
-		ProfileEntity perfilActualizado = null;
+	public ResponseEntity<?> update(@Valid @RequestBody ProfileDTO profileDTO, BindingResult result, @PathVariable Long id) {
+		ProfileDTO perfilActualDTO = this.profileService.findById(id);
+		ProfileDTO perfilActualizadoDTO = null;
 
 		Map<String, Object> response = new HashMap<>();
 
@@ -123,37 +129,45 @@ public class ProfileRestController {
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 
-		if (perfilActual == null) {
-			response.put("mensaje", "Error: No se pudo editar, el Profile con el ID: ".concat(id.toString())
+		if (perfilActualDTO == null) {
+			response.put("mensaje", "Error: No se pudo actualizar, el perfil con el ID: ".concat(id.toString())
 					.concat(" no existe en la base de datos"));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
-		}		
-
+		}
+		
+		UserDTO userEncontradoDTO = null;
+		
 		try {
 			// RECUPEAR EL USER DESDE LA BASE DE DATOS			
-			// UserEntity userEncontrado = this.userService.findById(profile.getUser().getId());
-			UserEntity userEncontrado = null;
-			
-			if (userEncontrado == null) {
-				response.put("mensaje", "Error: No se pudo editar el perfil para el usuario con el ID: ".concat(profile.getUser().getId().toString())
-						.concat(" porque no existe en la base de datos"));
-				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
-			}	
-			
-			// TODO: VALIDAR QUE EL USUARIO NO ESTE YA ASOCIADO AL PERFIL.
-			perfilActual.setBio(profile.getBio());
-			perfilActual.setWebsite(profile.getWebsite());			
-			perfilActual.setUser(userEncontrado);
-
-			perfilActualizado = this.profileService.save(perfilActual);
+			userEncontradoDTO = this.userService.findById(profileDTO.getUserId());
 		} catch (DataAccessException e) {
-			response.put("mensaje", "Error al actualizar el cliente en la base de datos");
+			response.put("mensaje", "Error al realizar la consulta en la base de datos");
+			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+		if (userEncontradoDTO == null) {
+			response.put("mensaje", "Error: No se pudo actualizar el perfil para el usuario con el ID: ".concat(profileDTO.getUserId().toString())
+					.concat(" porque no existe en la base de datos"));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+		}
+
+		try {
+			// TODO: VALIDAR QUE EL USUARIO NO ESTE YA ASOCIADO AL PERFIL.
+			perfilActualDTO.setBio(profileDTO.getBio());
+			perfilActualDTO.setWebsite(profileDTO.getWebsite());
+			perfilActualDTO.setUserId(profileDTO.getUserId());
+			// perfilActualDTO.setUser(userEncontrado);
+
+			perfilActualizadoDTO = this.profileService.save(perfilActualDTO);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al actualizar el Perfil en la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		response.put("mensaje", "¡El Profile ha sido actualizado con éxito!");
-		response.put("perfil", perfilActualizado);
+		response.put("mensaje", "¡El Perfil ha sido actualizado con éxito!");
+		response.put("perfil", perfilActualizadoDTO);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
@@ -162,16 +176,16 @@ public class ProfileRestController {
 	public ResponseEntity<?> delete(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
 
-		ProfileEntity perfil = this.profileService.findById(id);
+		ProfileDTO perfilDTO = this.profileService.findById(id);
 		
-		if (perfil == null) {
+		if (perfilDTO == null) {
 			response.put("mensaje", "Error: no se pudo eliminar, el Profile con ID: "
 					.concat(id.toString().concat(" no existe en la base de datos!")));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 
 		try {
-			this.profileService.delete(id);			
+			this.profileService.delete(id);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al eliminar el Perfil de la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));

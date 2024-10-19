@@ -2,11 +2,11 @@ package com.bolsadeideas.springboot.backend.apirest.service.interfaces;
 
 import java.util.List;
 
-import com.bolsadeideas.springboot.backend.apirest.persistence.entity.CategoryEntity;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.CategoryDTO;
 
 public interface ICategoryService {
-	List<CategoryEntity> findAll();
-	CategoryEntity findById(Long id);
-	CategoryEntity save(CategoryEntity category);
+	List<CategoryDTO> findAll();
+	CategoryDTO findById(Long id);
+	CategoryDTO save(CategoryDTO categoryDTO);
 	void delete(Long id);
 }

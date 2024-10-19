@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bolsadeideas.springboot.backend.apirest.persistence.entity.CategoryEntity;
-import com.bolsadeideas.springboot.backend.apirest.persistence.entity.ProductCategory;
-import com.bolsadeideas.springboot.backend.apirest.persistence.entity.ProductEntity;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.CategoryDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductCategoryDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.ICategoryService;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IProductCategoryService;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IProductService;
@@ -37,43 +37,46 @@ public class ProductCategoryRestController {
 	private final IProductService productService;
 	private final ICategoryService categoryService;
 
-	public ProductCategoryRestController(IProductCategoryService productCategoryService, IProductService productService, ICategoryService categoryService) {
+	public ProductCategoryRestController(
+			IProductCategoryService productCategoryService, 
+			IProductService productService,
+			ICategoryService categoryService) {
 		this.productCategoryService = productCategoryService;
 		this.productService = productService;
 		this.categoryService = categoryService;
 	}
-	
+
 	@GetMapping("/product_category")
-	public List<ProductCategory> index() {
+	public List<ProductCategoryDTO> index() {
 		return this.productCategoryService.findAll();
 	}
 
 	@GetMapping("/product_category/{id}")
 	public ResponseEntity<?> show(@PathVariable Long id) {
-		ProductCategory productCategory = null;
+		ProductCategoryDTO productCategoryDTO = null;
 
 		Map<String, Object> response = new HashMap<>();
 
 		try {
-			productCategory = this.productCategoryService.findById(id);
+			productCategoryDTO = this.productCategoryService.findById(id);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar la consulta en la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		if (productCategory == null) {
+		if (productCategoryDTO == null) {
 			response.put("mensaje",
 					"El ProductCategory con el ID: ".concat(id.toString()).concat(" no existe en la base de datos"));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 
-		return new ResponseEntity<ProductCategory>(productCategory, HttpStatus.OK);
+		return new ResponseEntity<ProductCategoryDTO>(productCategoryDTO, HttpStatus.OK);
 	}
 
 	@PostMapping("/product_category")
-	public ResponseEntity<?> create(@Valid @RequestBody ProductCategory productCategory, BindingResult result) {
-		ProductCategory nuevoProductCategory = null;
+	public ResponseEntity<?> create(@Valid @RequestBody ProductCategoryDTO productCategoryDTO, BindingResult result) {
+		ProductCategoryDTO nuevoProductCategoryDTO = null;
 		Map<String, Object> response = new HashMap<>();
 
 		if (result.hasErrors()) {
@@ -84,47 +87,47 @@ public class ProductCategoryRestController {
 			response.put("errors", errors);
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
-		
-		ProductEntity productActual = null;
-		Long idProductActual = 0L;
+
+		ProductDTO productDTOActual = null;
+		Long productIdDTOActual = 0L;
 
 		try {
-			idProductActual = productCategory.getProduct().getId();
-			productActual = this.productService.findById(idProductActual);
+			// RECUPEAR EL PRODUCT DESDE LA BASE DE DATOS
+			productIdDTOActual = productCategoryDTO.getProductId();
+			productDTOActual = this.productService.findById(productIdDTOActual);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar la consulta en la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		if (productActual == null) {
-			response.put("mensaje", "El Product con el ID: ".concat(idProductActual.toString())
+		if (productDTOActual == null) {
+			response.put("mensaje", "El Product con el ID: ".concat(productIdDTOActual.toString())
 					.concat(" no existe en la base de datos"));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
-		
-		CategoryEntity categoryActual = null;
-		Long idCategoryActual = 0L;
+
+		CategoryDTO categoryDTOActual = null;
+		Long categoryIdDTOActual = 0L;
 
 		try {
-			idCategoryActual = productCategory.getCategory().getId();
-			categoryActual = this.categoryService.findById(idCategoryActual);
+			// RECUPEAR EL CATEGORY DESDE LA BASE DE DATOS
+			categoryIdDTOActual = productCategoryDTO.getCategoryId();
+			categoryDTOActual = this.categoryService.findById(categoryIdDTOActual);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar la consulta en la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		if (categoryActual == null) {
-			response.put("mensaje", "El Category con el ID: ".concat(idCategoryActual.toString())
+		if (categoryDTOActual == null) {
+			response.put("mensaje", "El Category con el ID: ".concat(categoryIdDTOActual.toString())
 					.concat(" no existe en la base de datos"));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 
 		try {
-			productCategory.setProduct(productActual);
-			productCategory.setCategory(categoryActual);
-			nuevoProductCategory = this.productCategoryService.save(productCategory);
+			nuevoProductCategoryDTO = this.productCategoryService.save(productCategoryDTO);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar el insert en la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
@@ -132,16 +135,16 @@ public class ProductCategoryRestController {
 		}
 
 		response.put("mensaje", "¡El ProductCategory ha sido creado con éxito!");
-		response.put("productCategory", nuevoProductCategory);
+		response.put("productCategory", nuevoProductCategoryDTO);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/product_category/{id}")
-	public ResponseEntity<?> update(@Valid @RequestBody ProductCategory productCategory, BindingResult result,
+	public ResponseEntity<?> update(@Valid @RequestBody ProductCategoryDTO productCategoryDTO, BindingResult result,
 			@PathVariable Long id) {
-		ProductCategory productCategoryActual = this.productCategoryService.findById(id);
-		ProductCategory productCategoryActualizado = null;
+		ProductCategoryDTO productCategoryDTOActual = this.productCategoryService.findById(id);
+		ProductCategoryDTO productCategoryDTOActualizado = null;
 
 		Map<String, Object> response = new HashMap<>();
 
@@ -154,54 +157,55 @@ public class ProductCategoryRestController {
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 
-		if (productCategoryActual == null) {
+		if (productCategoryDTOActual == null) {
 			response.put("mensaje", "Error: No se pudo editar, el ProductCategory con el ID: ".concat(id.toString())
 					.concat(" no existe en la base de datos"));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
-		
-		ProductEntity productActual = null;
-		Long idProductActual = 0L;
+
+		ProductDTO productDTOActual = null;
+		Long productIdDTOActual = 0L;
 
 		try {
-			idProductActual = productCategory.getProduct().getId();
-			productActual = this.productService.findById(idProductActual);
+			// RECUPEAR EL PRODUCT DESDE LA BASE DE DATOS
+			productIdDTOActual = productCategoryDTO.getProductId();
+			productDTOActual = this.productService.findById(productIdDTOActual);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar la consulta en la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		if (productActual == null) {
-			response.put("mensaje", "El Product con el ID: ".concat(idProductActual.toString())
+		if (productDTOActual == null) {
+			response.put("mensaje", "El Product con el ID: ".concat(productIdDTOActual.toString())
 					.concat(" no existe en la base de datos"));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
-		
-		CategoryEntity categoryActual = null;
-		Long idCategoryActual = 0L;
+
+		CategoryDTO categoryDTOActual = null;
+		Long categoryIdDTOActual = 0L;
 
 		try {
-			idCategoryActual = productCategory.getCategory().getId();
-			categoryActual = this.categoryService.findById(idCategoryActual);
+			// RECUPEAR EL CATEGORY DESDE LA BASE DE DATOS
+			categoryIdDTOActual = productCategoryDTO.getCategoryId();
+			categoryDTOActual = this.categoryService.findById(categoryIdDTOActual);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar la consulta en la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		if (categoryActual == null) {
-			response.put("mensaje", "El Category con el ID: ".concat(idCategoryActual.toString())
+		if (categoryDTOActual == null) {
+			response.put("mensaje", "El Category con el ID: ".concat(categoryIdDTOActual.toString())
 					.concat(" no existe en la base de datos"));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 
 		try {
-			productCategoryActual.setDescription(productCategory.getDescription());
-			productCategoryActual.setProduct(productActual);
-			productCategoryActual.setCategory(categoryActual);
-
-			productCategoryActualizado = this.productCategoryService.save(productCategoryActual);
+			productCategoryDTOActual.setDescription(productCategoryDTO.getDescription());
+			productCategoryDTOActual.setProductId(productCategoryDTO.getProductId());
+			productCategoryDTOActual.setCategoryId(productCategoryDTO.getCategoryId());
+			productCategoryDTOActualizado = this.productCategoryService.save(productCategoryDTOActual);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al actualizar el ProductCategory en la base de datos");
 			response.put("error", e.getMessage().concat(" : ").concat(e.getMostSpecificCause().getMessage()));
@@ -209,7 +213,7 @@ public class ProductCategoryRestController {
 		}
 
 		response.put("mensaje", "¡El ProductCategory ha sido actualizado con éxito!");
-		response.put("productCategory", productCategoryActualizado);
+		response.put("productCategory", productCategoryDTOActualizado);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
@@ -218,8 +222,8 @@ public class ProductCategoryRestController {
 	public ResponseEntity<?> delete(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
 
-		ProductCategory productCategory = this.productCategoryService.findById(id);
-		if (productCategory == null) {
+		ProductCategoryDTO productCategoryDTO = this.productCategoryService.findById(id);
+		if (productCategoryDTO == null) {
 			response.put("mensaje", "Error: no se pudo eliminar, el ProductCategory con ID: "
 					.concat(id.toString().concat(" no existe en la base de datos!")));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);

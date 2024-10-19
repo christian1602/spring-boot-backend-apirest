@@ -2,25 +2,17 @@ package com.bolsadeideas.springboot.backend.apirest.presentation.dto;
 
 import java.util.Objects;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-public class UserDTO {
-		
+public class CategoryDTO {
+
 	private Long id;
-	
+
 	@NotBlank
 	private String name;
-	
-	@NotBlank
-	private String username;
-	
-	@NotBlank
-	@Email
-	private String email;
 
-	public UserDTO() {
-	}	
+	public CategoryDTO() {
+	}
 
 	public Long getId() {
 		return id;
@@ -38,25 +30,9 @@ public class UserDTO {
 		this.name = name;
 	}
 
-	public String getUsername() {
-		return username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
 	@Override
 	public String toString() {
-		return "UserDTO [id=" + id + ", name=" + name + ", username=" + username + ", email=" + email + "]";
+		return "CategoryDTO [id=" + id + ", name=" + name + "]";
 	}
 
 	@Override
@@ -72,7 +48,7 @@ public class UserDTO {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		UserDTO other = (UserDTO) obj;
+		CategoryDTO other = (CategoryDTO) obj;
 		return Objects.equals(id, other.id);
 	}
 }

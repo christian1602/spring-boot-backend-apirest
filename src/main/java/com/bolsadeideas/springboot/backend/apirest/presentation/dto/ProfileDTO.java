@@ -5,21 +5,28 @@ import java.util.Objects;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public class PostDTO {
+public class ProfileDTO {
 
 	private Long id;
 
 	@NotBlank
-	private String title;
+	private String bio;
 
 	@NotBlank
-	private String body;
+	private String website;
 
 	@NotNull
 	private Long userId;
 
-	public PostDTO() {
-	}	
+	public ProfileDTO() {
+	}
+
+	public ProfileDTO(Long id, String bio, String website, Long userId) {
+		this.id = id;
+		this.bio = bio;
+		this.website = website;
+		this.userId = userId;
+	}
 
 	public Long getId() {
 		return id;
@@ -29,20 +36,20 @@ public class PostDTO {
 		this.id = id;
 	}
 
-	public String getTitle() {
-		return title;
+	public String getBio() {
+		return bio;
 	}
 
-	public void setTitle(String title) {
-		this.title = title;
+	public void setBio(String bio) {
+		this.bio = bio;
 	}
 
-	public String getBody() {
-		return body;
+	public String getWebsite() {
+		return website;
 	}
 
-	public void setBody(String body) {
-		this.body = body;
+	public void setWebsite(String website) {
+		this.website = website;
 	}
 
 	public Long getUserId() {
@@ -55,7 +62,7 @@ public class PostDTO {
 
 	@Override
 	public String toString() {
-		return "PostDTO [id=" + id + ", title=" + title + ", body=" + body + ", userId=" + userId + "]";
+		return "ProfileDTO [id=" + id + ", bio=" + bio + ", website=" + website + ", userId=" + userId + "]";
 	}
 
 	@Override
@@ -71,7 +78,7 @@ public class PostDTO {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		PostDTO other = (PostDTO) obj;
+		ProfileDTO other = (ProfileDTO) obj;
 		return Objects.equals(id, other.id);
 	}
 }
