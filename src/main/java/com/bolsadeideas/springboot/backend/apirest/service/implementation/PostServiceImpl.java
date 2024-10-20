@@ -1,7 +1,6 @@
 package com.bolsadeideas.springboot.backend.apirest.service.implementation;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -9,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.bolsadeideas.springboot.backend.apirest.exceptions.PostNotFoundException;
+import com.bolsadeideas.springboot.backend.apirest.exceptions.UserNotCreatorException;
 import com.bolsadeideas.springboot.backend.apirest.exceptions.UserNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.mappers.PostMapper;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.PostEntity;
@@ -51,12 +51,11 @@ public class PostServiceImpl implements IPostService {
 	@Override
 	@Transactional
 	public PostDTO save(PostDTO postDTO) {
-		PostEntity postEntity = this.postMapper.postDTOToPostEntity(postDTO);
-		
 		UserEntity userEntitY = this.userRepository.findById(postDTO.getUserId())
 				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(postDTO.getUserId().toString())));
-				
-		postEntity.setUser(userEntitY);	
+		
+		PostEntity postEntity = this.postMapper.postDTOToPostEntity(postDTO);
+		postEntity.setUser(userEntitY);
 		PostEntity postEntitySaved = this.postRepository.save(postEntity);
 		
 		return this.postMapper.postEntityToPostDTO(postEntitySaved);
@@ -68,12 +67,15 @@ public class PostServiceImpl implements IPostService {
 		PostEntity existingPostEntity = this.postRepository.findById(id)
 				.orElseThrow(() -> new PostNotFoundException("Post not found with ID: ".concat(id.toString())));
 		
-		existingPostEntity.setTitle(postDTO.getTitle());
-		existingPostEntity.setBody(postDTO.getBody());
-		
-		UserEntity userEntity = this.userRepository.findById(postDTO.getUserId())
+	    if (!existingPostEntity.getUser().getId().equals(postDTO.getUserId())) {
+	        throw new UserNotCreatorException("User with ID: ".concat(postDTO.getUserId().toString()).concat(" is not the creator of the Post"));
+	    }
+	    
+	    UserEntity userEntity = this.userRepository.findById(postDTO.getUserId())
 				.orElseThrow(()-> new UserNotFoundException("User not found with ID: ".concat(postDTO.getUserId().toString())));
 		
+		existingPostEntity.setTitle(postDTO.getTitle());
+		existingPostEntity.setBody(postDTO.getBody());		
 		existingPostEntity.setUser(userEntity);
 		
 		PostEntity updatedPostEntity = this.postRepository.save(existingPostEntity);
@@ -84,6 +86,8 @@ public class PostServiceImpl implements IPostService {
 	@Override
 	@Transactional
 	public void delete(Long id) {
+		this.postRepository.findById(id)
+				.orElseThrow(() -> new PostNotFoundException("Post not found with ID: ".concat(id.toString())));
 		this.postRepository.deleteById(id);
 	}
 }

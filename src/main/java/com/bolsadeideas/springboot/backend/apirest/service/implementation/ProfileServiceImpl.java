@@ -8,6 +8,9 @@ import java.util.stream.StreamSupport;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bolsadeideas.springboot.backend.apirest.exceptions.ProfileNotFoundException;
+import com.bolsadeideas.springboot.backend.apirest.exceptions.UserAlreadyHasProfileException;
+import com.bolsadeideas.springboot.backend.apirest.exceptions.UserNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.mappers.ProfileMapper;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.ProfileEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.UserEntity;
@@ -41,30 +44,35 @@ public class ProfileServiceImpl implements IProfileService {
 	@Override
 	@Transactional(readOnly = true)
 	public ProfileDTO findById(Long id) {
-		Optional<ProfileEntity> profileEntityOptional = this.profileRepository.findById(id); 
-		return profileEntityOptional.map(this.profileMapper::ProfileEntityToProfileDTO).orElse(null);
+		ProfileEntity profileEntity = this.profileRepository.findById(id)
+				.orElseThrow(() -> new ProfileNotFoundException("Profile not found with ID: ".concat(id.toString())));		 
+		return this.profileMapper.ProfileEntityToProfileDTO(profileEntity);
 	}
 
 	@Override
 	@Transactional
-	public ProfileDTO save(ProfileDTO profileDTO) { 
+	public ProfileDTO save(ProfileDTO profileDTO) {
+		UserEntity userEntity = this.userRepository.findById(profileDTO.getUserId())
+				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(profileDTO.getUserId().toString())));
+		
+		Optional<ProfileEntity> existingProfileEntityOptional = this.profileRepository.findByUserId(userEntity.getId());
+		
+		if (existingProfileEntityOptional.isPresent()) {
+			throw new UserAlreadyHasProfileException("User with ID: ".concat(userEntity.getId().toString()).concat(" already has a profile"));
+		} 
+		
 		ProfileEntity profileEntity = this.profileMapper.profileDTOToProfileEntity(profileDTO);
+		profileEntity.setUser(userEntity);
+		ProfileEntity profileEntitySaved = this.profileRepository.save(profileEntity);
 		
-		Optional<UserEntity> userEntityOptional = this.userRepository.findById(profileDTO.getUserId());
-		
-		if (userEntityOptional.isEmpty()) {
-			return null;
-		}
-		
-		profileEntity.setUser(userEntityOptional.get());
-		
-		ProfileEntity profileEntitySaved = this.profileRepository.save(profileEntity); 
 		return this.profileMapper.ProfileEntityToProfileDTO(profileEntitySaved);
 	}
 
 	@Override
 	@Transactional
 	public void delete(Long id) {
+		this.profileRepository.findById(id)
+				.orElseThrow(() -> new ProfileNotFoundException("Profile not found with ID: ".concat(id.toString())));
 		this.profileRepository.deleteById(id);
 	}
 }

@@ -28,7 +28,7 @@ public class PostEntity {
 	private String body;
 
 	@ManyToOne(targetEntity = UserEntity.class)
-	@JoinColumn(nullable = false)
+	@JoinColumn(name = "user_id", nullable = false)
 	@JsonBackReference
 	private UserEntity user;
 

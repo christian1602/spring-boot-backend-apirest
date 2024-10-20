@@ -1,13 +1,13 @@
 package com.bolsadeideas.springboot.backend.apirest.service.implementation;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bolsadeideas.springboot.backend.apirest.exceptions.UserNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.mappers.UserMapper;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.UserEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IUserRepository;
@@ -37,8 +37,9 @@ public class UserServiceImpl implements IUserService {
 	@Override
 	@Transactional(readOnly = true)
 	public UserDTO findById(Long id) {
-		Optional<UserEntity> userEntityOptional = this.userRepository.findById(id);
-		return userEntityOptional.map(this.userMapper::userEntityToUserDTO).orElse(null);
+		UserEntity userEntity = this.userRepository.findById(id)
+				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(id.toString())));		
+		return this.userMapper.userEntityToUserDTO(userEntity);
 	}
 
 	@Override
@@ -48,10 +49,26 @@ public class UserServiceImpl implements IUserService {
 		UserEntity userEntitySaved = this.userRepository.save(userEntity);
 		return this.userMapper.userEntityToUserDTO(userEntitySaved);
 	}
+	
+	@Override
+	public UserDTO update(Long id, UserDTO userDTO) {
+		UserEntity userEntity = this.userRepository.findById(id)
+				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(id.toString())));
+		
+		userEntity.setName(userDTO.getName());
+		userEntity.setUsername(userDTO.getUsername());
+		userEntity.setEmail(userDTO.getEmail());
+		
+		UserEntity updatedUserEntity = this.userRepository.save(userEntity);
+		
+		return this.userMapper.userEntityToUserDTO(updatedUserEntity);
+	}
 
 	@Override
 	@Transactional
 	public void delete(Long id) {
+		this.userRepository.findById(id)
+				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(id.toString())));
 		this.userRepository.deleteById(id);
 	}
 }

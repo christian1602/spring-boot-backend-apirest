@@ -27,7 +27,7 @@ public class ProfileEntity {
 	private String website;
 
 	@OneToOne(targetEntity = UserEntity.class, cascade = CascadeType.PERSIST)
-	@JoinColumn(nullable = false)
+	@JoinColumn(name = "user_id", nullable = false)
 	private UserEntity user;
 
 	public ProfileEntity() {
