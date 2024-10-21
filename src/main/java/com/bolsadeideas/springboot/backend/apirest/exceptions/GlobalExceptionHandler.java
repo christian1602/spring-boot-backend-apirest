@@ -33,12 +33,11 @@ public class GlobalExceptionHandler {
 	
 	@ExceptionHandler(ProfileNotFoundException.class)
 	public ResponseEntity<Map<String,Object>> handleProfileNotFoundException(ProfileNotFoundException ex){
-		Map<String, Object> response = new HashMap<>();		
+		Map<String, Object> response = new HashMap<>();
 		response.put("mensaje", "Profile not found");
 		response.put("error", ex.getMessage());
 		return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 	}
-	
 	
 	@ExceptionHandler(UserNotCreatorException.class)
 	public ResponseEntity<Map<String,Object>> handleUserNotCreatorException(UserNotCreatorException ex){
@@ -62,6 +61,14 @@ public class GlobalExceptionHandler {
 		response.put("mensaje", "Category not found");
 		response.put("error", ex.getMessage());
 		return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	}
+	
+	@ExceptionHandler(ProductCategoryNotFoundException.class)
+	public ResponseEntity<Map<String,Object>> handleProductCategoryNotFoundException(ProductCategoryNotFoundException ex){
+		Map<String, Object> response = new HashMap<>();
+		response.put("mensaje", "Product and Category not found");
+		response.put("error", ex.getMessage());
+		return new ResponseEntity<>(response, HttpStatus.CONFLICT);
 	}
 	
 	@ExceptionHandler(UserAlreadyHasProfileException.class)
