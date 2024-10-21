@@ -1,13 +1,14 @@
 package com.bolsadeideas.springboot.backend.apirest.service.implementation;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bolsadeideas.springboot.backend.apirest.exceptions.CategoryAlreadyExistsInProductCategoryException;
+import com.bolsadeideas.springboot.backend.apirest.exceptions.CategoryNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.mappers.CategoryMapper;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.CategoryEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.ICategoryRepository;
@@ -28,8 +29,7 @@ public class CategoryServiceImpl implements ICategoryService {
 	@Override
 	@Transactional(readOnly = true)
 	public List<CategoryDTO> findAll() {		
-		Iterable<CategoryEntity> categories = this.categoryRepository.findAll();
-		
+		Iterable<CategoryEntity> categories = this.categoryRepository.findAll();		
 		return StreamSupport.stream(categories.spliterator(), false)
 				.map(this.categoryMapper::categoryEntityToCategoryDTO)
 				.collect(Collectors.toList());
@@ -38,8 +38,9 @@ public class CategoryServiceImpl implements ICategoryService {
 	@Override
 	@Transactional(readOnly = true)
 	public CategoryDTO findById(Long id) {
-		Optional<CategoryEntity> categoryEntityOptional = this.categoryRepository.findById(id); 
-		return categoryEntityOptional.map(this.categoryMapper::categoryEntityToCategoryDTO).orElse(null);
+		CategoryEntity categoryEntity = this.categoryRepository.findById(id)
+			.orElseThrow(() -> new CategoryNotFoundException("Category not found with ID: ".concat(id.toString()))); 
+		return this.categoryMapper.categoryEntityToCategoryDTO(categoryEntity);
 	}
 
 	@Override
@@ -49,10 +50,29 @@ public class CategoryServiceImpl implements ICategoryService {
 		CategoryEntity categoryEntitySaved = this.categoryRepository.save(categoryEntity); 
 		return this.categoryMapper.categoryEntityToCategoryDTO(categoryEntitySaved);
 	}
+	
+	@Override
+	@Transactional
+	public CategoryDTO update(Long id, CategoryDTO categoryDTO) {
+		CategoryEntity existingCategoryEntity = this.categoryRepository.findById(id)
+				.orElseThrow(() -> new CategoryNotFoundException("Category not found with ID: ".concat(id.toString())));
+		
+		existingCategoryEntity.setName(categoryDTO.getName());
+		
+		CategoryEntity updatedCategoryEntity = this.categoryRepository.save(existingCategoryEntity);
+		return this.categoryMapper.categoryEntityToCategoryDTO(updatedCategoryEntity);
+	}
 
 	@Override
 	@Transactional
 	public void delete(Long id) {
+		this.categoryRepository.findById(id)
+			.orElseThrow(() -> new CategoryNotFoundException("Category not found with ID: ".concat(id.toString())));
+		
+		if (this.categoryRepository.existsByProductCategoriesCategoryId(id)) {
+			throw new CategoryAlreadyExistsInProductCategoryException("Category with ID: ".concat(id.toString()).concat(" has products"));
+		}
+
 		this.categoryRepository.deleteById(id);
 	}
 }

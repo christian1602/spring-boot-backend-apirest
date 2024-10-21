@@ -8,5 +8,6 @@ public interface ICategoryService {
 	List<CategoryDTO> findAll();
 	CategoryDTO findById(Long id);
 	CategoryDTO save(CategoryDTO categoryDTO);
+	CategoryDTO update(Long id, CategoryDTO categoryDTO);
 	void delete(Long id);
 }

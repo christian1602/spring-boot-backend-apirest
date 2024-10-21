@@ -1,13 +1,14 @@
 package com.bolsadeideas.springboot.backend.apirest.service.implementation;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bolsadeideas.springboot.backend.apirest.exceptions.ProductAlreadyExistsInProductCategoryException;
+import com.bolsadeideas.springboot.backend.apirest.exceptions.ProductNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.mappers.ProductMapper;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.ProductEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IProductRepository;
@@ -37,21 +38,42 @@ public class ProductServiceImpl implements IProductService {
 	@Override
 	@Transactional(readOnly = true)
 	public ProductDTO findById(Long id) {
-		Optional<ProductEntity> productEntityOptional = this.productoRepository.findById(id); 
-		return productEntityOptional.map(this.productMapper::productEntityToProductDTO).orElse(null);
+		ProductEntity productEntity = this.productoRepository.findById(id)
+				.orElseThrow(() -> new ProductNotFoundException("Product not found with ID: ".concat(id.toString()))); 
+		return this.productMapper.productEntityToProductDTO(productEntity);
 	}
 
 	@Override
 	@Transactional
 	public ProductDTO save(ProductDTO productDTO) {
 		ProductEntity productEntity = this.productMapper.productDTOToProductEntity(productDTO);
-		ProductEntity productEntitySaved = this.productoRepository.save(productEntity);		
+		ProductEntity productEntitySaved = this.productoRepository.save(productEntity);
 		return this.productMapper.productEntityToProductDTO(productEntitySaved);
+	}
+	
+	@Override
+	@Transactional
+	public ProductDTO update(Long id, ProductDTO productDTO) {		
+		ProductEntity existingProductEntity = this.productoRepository.findById(id)
+				.orElseThrow(() -> new ProductNotFoundException("Product not found with ID: ".concat(id.toString())));
+		
+		existingProductEntity.setName(productDTO.getName());
+
+		ProductEntity updatedProductEntity = this.productoRepository.save(existingProductEntity);
+
+		return this.productMapper.productEntityToProductDTO(updatedProductEntity);
 	}
 
 	@Override
 	@Transactional
 	public void delete(Long id) {
+		this.productoRepository.findById(id)
+			.orElseThrow(() -> new ProductNotFoundException("Product not found with ID: ".concat(id.toString())));
+		
+		if (this.productoRepository.existsByProductCategoriesProductId(id)) {
+			throw new ProductAlreadyExistsInProductCategoryException("Product with ID: ".concat(id.toString()).concat(" has categories"));
+		}
+			
 		this.productoRepository.deleteById(id);
 	}
 }

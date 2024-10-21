@@ -48,10 +48,42 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
 	}
 	
+	@ExceptionHandler(ProductNotFoundException.class)
+	public ResponseEntity<Map<String,Object>> handleProductNotFoundException(ProductNotFoundException ex){
+		Map<String, Object> response = new HashMap<>();		
+		response.put("mensaje", "Product not found");
+		response.put("error", ex.getMessage());
+		return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	}
+	
+	@ExceptionHandler(CategoryNotFoundException.class)
+	public ResponseEntity<Map<String,Object>> handleCategoryNotFoundException(CategoryNotFoundException ex){
+		Map<String, Object> response = new HashMap<>();
+		response.put("mensaje", "Category not found");
+		response.put("error", ex.getMessage());
+		return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	}
+	
 	@ExceptionHandler(UserAlreadyHasProfileException.class)
 	public ResponseEntity<Map<String,Object>> handleUserAlreadyHasProfileException(UserAlreadyHasProfileException ex){
 		Map<String, Object> response = new HashMap<>();
 		response.put("mensaje", "User already has a profile");
+		response.put("error", ex.getMessage());
+		return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+	}
+	
+	@ExceptionHandler(ProductAlreadyExistsInProductCategoryException.class)
+	public ResponseEntity<Map<String,Object>> handleProductAlreadyExistsInProductCategoryException(ProductAlreadyExistsInProductCategoryException ex){
+		Map<String, Object> response = new HashMap<>();
+		response.put("mensaje", "Product already has categories");
+		response.put("error", ex.getMessage());
+		return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+	}
+	
+	@ExceptionHandler(CategoryAlreadyExistsInProductCategoryException.class)
+	public ResponseEntity<Map<String,Object>> handleCategoryAlreadyExistsInProductCategoryException(CategoryAlreadyExistsInProductCategoryException ex){
+		Map<String, Object> response = new HashMap<>();
+		response.put("mensaje", "Category already has products");
 		response.put("error", ex.getMessage());
 		return new ResponseEntity<>(response, HttpStatus.CONFLICT);
 	}

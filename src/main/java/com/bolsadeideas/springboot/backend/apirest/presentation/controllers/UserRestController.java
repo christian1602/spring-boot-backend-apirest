@@ -65,7 +65,7 @@ public class UserRestController {
 		if (result.hasErrors()) {
 			throw new InvalidDataException(result);
 		}
-		UserDTO userActualizadoDTO = this.userService.save(userDTO);
+		UserDTO userActualizadoDTO = this.userService.update(id,userDTO);
 
 		Map<String, Object> response = new HashMap<>();
 		response.put("mensaje", "¡El User ha sido actualizado con éxito!");

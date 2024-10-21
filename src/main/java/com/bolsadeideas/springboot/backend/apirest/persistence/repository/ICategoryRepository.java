@@ -6,4 +6,5 @@ import com.bolsadeideas.springboot.backend.apirest.persistence.entity.CategoryEn
 
 public interface ICategoryRepository extends CrudRepository<CategoryEntity, Long> {
 
+	boolean existsByProductCategoriesCategoryId(Long categoryId);
 }
