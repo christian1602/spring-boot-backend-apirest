@@ -6,21 +6,21 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public class UserDTO {
-		
+
 	private Long id;
-	
+
 	@NotBlank
 	private String name;
-	
+
 	@NotBlank
 	private String username;
-	
+
 	@NotBlank
 	@Email
 	private String email;
 
 	public UserDTO() {
-	}	
+	}
 
 	public Long getId() {
 		return id;
@@ -61,7 +61,7 @@ public class UserDTO {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id);
+		return Objects.hash(email);
 	}
 
 	@Override
@@ -73,6 +73,6 @@ public class UserDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		UserDTO other = (UserDTO) obj;
-		return Objects.equals(id, other.id);
+		return Objects.equals(email, other.email);
 	}
 }
