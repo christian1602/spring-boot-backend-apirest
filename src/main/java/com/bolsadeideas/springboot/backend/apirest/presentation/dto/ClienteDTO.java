@@ -1,46 +1,30 @@
-package com.bolsadeideas.springboot.backend.apirest.persistence.entity;
+package com.bolsadeideas.springboot.backend.apirest.presentation.dto;
 
 import java.util.Date;
 import java.util.Objects;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-@Entity
-@Table(name = "clientes")
-public class ClienteEntity {
+public class ClienteDTO {
 	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@Column(name = "nombre", nullable = false)
+	@NotBlank
+	@Size(min = 4, max = 12)
 	private String nombre;
-
-	@Column(name = "apellido", nullable = false)
+	
+	@NotBlank
 	private String apellido;
-		
-	@Column(name = "email", unique = true, nullable = false)
+	
+	@NotBlank
+	@Email
 	private String email;
-
-	@Column(name = "created_at")
-	@Temporal(TemporalType.DATE)
+	
 	private Date createdAt;
 
-	@PrePersist
-	public void prePerist() {
-		this.createdAt = new Date();
-	}
-
-	public ClienteEntity() {
-		super();
+	public ClienteDTO() {
 	}
 
 	public Long getId() {
@@ -85,7 +69,7 @@ public class ClienteEntity {
 
 	@Override
 	public String toString() {
-		return "ClienteEntity [id=" + id + ", nombre=" + nombre + ", apellido=" + apellido + ", email=" + email
+		return "ClienteDTO [id=" + id + ", nombre=" + nombre + ", apellido=" + apellido + ", email=" + email
 				+ ", createdAt=" + createdAt + "]";
 	}
 
@@ -102,7 +86,7 @@ public class ClienteEntity {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ClienteEntity other = (ClienteEntity) obj;
+		ClienteDTO other = (ClienteDTO) obj;
 		return Objects.equals(id, other.id);
 	}
 }

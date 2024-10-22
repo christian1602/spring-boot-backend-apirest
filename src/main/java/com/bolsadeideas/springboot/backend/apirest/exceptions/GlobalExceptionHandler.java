@@ -15,6 +15,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 	
+	@ExceptionHandler(ClienteNotFoundException.class)
+	public ResponseEntity<Map<String,Object>> handleClienteNotFoundException(ClienteNotFoundException ex){
+		Map<String, Object> response = new HashMap<>();		
+		response.put("mensaje", "Cliente not found");
+		response.put("error", ex.getMessage());
+		return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	}
+	
 	@ExceptionHandler(UserNotFoundException.class)
 	public ResponseEntity<Map<String,Object>> handleUserNotFoundException(UserNotFoundException ex){
 		Map<String, Object> response = new HashMap<>();		

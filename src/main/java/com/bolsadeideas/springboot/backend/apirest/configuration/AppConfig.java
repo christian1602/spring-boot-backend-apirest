@@ -1,4 +1,4 @@
-package com.bolsadeideas.springboot.backend.apirest;
+package com.bolsadeideas.springboot.backend.apirest.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
