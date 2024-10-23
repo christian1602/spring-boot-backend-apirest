@@ -14,11 +14,17 @@ import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthResponse
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.CreateUserDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.implementation.UserDetailsServiceImpl;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/auth")
 @CrossOrigin(origins = { "http://localhost:4200 " })
+@Tag(name = "Authentication", description = "Controller for Authentication")
 public class AuthenticationRestController {
 	
 	private final UserDetailsServiceImpl userDetailsService;
@@ -42,6 +48,29 @@ public class AuthenticationRestController {
     }
     
     @PostMapping("/log-in")
+    @Operation(
+    		summary = "Login user", 
+    		description = "Authenticate a user and return the authentication token along with user details",
+    		tags = {"Authentication"},
+    		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+    				description = "Authentication request with username and password",
+    				required = true,
+    				content = @Content(
+    						mediaType = "application/json",
+    						schema = @Schema(implementation = AuthLoginDTO.class)
+    						)
+    				),
+    		responses = {
+    				@ApiResponse(
+    						responseCode = "200",
+    						description = "Successful authentication",
+    						content = @Content(
+    								mediaType = "application/json",
+    								schema = @Schema(implementation = AuthResponseDTO.class)
+    								)
+    						)
+    				}
+    		)
     public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody AuthLoginDTO authLoginDTO){
         try {
             return new ResponseEntity<AuthResponseDTO>(this.userDetailsService.loginUser(authLoginDTO), HttpStatus.OK);

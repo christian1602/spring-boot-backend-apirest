@@ -6,7 +6,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
+// import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -38,24 +38,26 @@ public class SecurityConfig {
 	SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 		return httpSecurity
 				.csrf(AbstractHttpConfigurer::disable)
-				.httpBasic(Customizer.withDefaults())
+				// .httpBasic(Customizer.withDefaults())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auths -> {
-					// PRIMERO: CONFIGURAR LOS ENDPOINTS PUBLICOS
+					// PERMITIR ACCESO PUBLICO A SWAGGER
+		            auths.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
+					// ENDPOINTS PUBLICOS DE AUTENTICACION
 					auths.requestMatchers(HttpMethod.POST, "/auth/**").permitAll();
 
-					// SEGUNDO: CONFIGURAR LOS ENDPOINTS PRIVADOS		
+					// ENDPOINTS PRIVADOS
 					// auths.requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("READ");
 					auths.requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("ADMIN", "DEVELOPER", "USER", "GUEST");					
 					auths.requestMatchers(HttpMethod.POST, "/api/**").hasAnyRole("ADMIN", "DEVELOPER");
 					auths.requestMatchers(HttpMethod.PUT, "/api/**").hasAnyRole("ADMIN", "DEVELOPER");
 					auths.requestMatchers(HttpMethod.DELETE, "/api/**").hasAnyRole("ADMIN");
 
-					// TERCERO: CONFIGURAR EL RESTO DE ENDPOINTS - NO ESPECIFICADOS
-					// auths.anyRequest().authenticated(); // CREDENCIALES VALIDAS, ENTONCES LA
-					// RESPUESTA ES 200 (OK)
-					auths.anyRequest().denyAll(); // LA RESPUESTA SIEMPRE SERA 403 (FORBIDDEN)
-				}).addFilterBefore(new JwtTokenValidator(this.jwtUtils), BasicAuthenticationFilter.class).build();
+					// CONFIGURACION POR DEFECTO (PARA LOS NO ESPECIFICADOS)
+					auths.anyRequest().authenticated(); // CREDENCIALES VALIDAS, ENTONCES LA RESPUESTA ES 200 (OK)
+					// auths.anyRequest().denyAll(); // LA RESPUESTA SIEMPRE SERA 403 (FORBIDDEN)
+				}).addFilterBefore(new JwtTokenValidator(this.jwtUtils), BasicAuthenticationFilter.class)
+				.build();
 	}
 	// PASO 2: CONFIGURANDO AUTHENTICATION MANAGER
 	@Bean
