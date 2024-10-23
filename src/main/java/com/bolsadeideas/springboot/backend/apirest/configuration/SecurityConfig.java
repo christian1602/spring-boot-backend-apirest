@@ -35,7 +35,7 @@ public class SecurityConfig {
 
 	// PASO 1: CONFIGURANDO SECURITY FILTER CHAIN SIN ANOTACIONES EN EL CONTROLADOR 
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+	SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 		return httpSecurity
 				.csrf(AbstractHttpConfigurer::disable)
 				.httpBasic(Customizer.withDefaults())
@@ -44,16 +44,12 @@ public class SecurityConfig {
 					// PRIMERO: CONFIGURAR LOS ENDPOINTS PUBLICOS
 					auths.requestMatchers(HttpMethod.POST, "/auth/**").permitAll();
 
-					// SEGUNDO: CONFIGURAR LOS ENDPOINTS PRIVADOS
-					// auths.requestMatchers(HttpMethod.POST, "/auth/post").hasAuthority("CREATE");
-					// auths.requestMatchers(HttpMethod.POST,
-					// "/auth/post").hasAnyAuthority("CREATE", "READ");
-					auths.requestMatchers(HttpMethod.PATCH, "/method/patch").hasAnyAuthority("REFACTOR");
-
-					// auths.requestMatchers(HttpMethod.POST, "/auth/post").hasRole("ADMIN");
-					auths.requestMatchers(HttpMethod.POST, "/method/post").hasAnyRole("ADMIN", "DEVELOPER");
-					// auths.requestMatchers(HttpMethod.GET, "/method/get").hasAnyRole("GUEST");
-					auths.requestMatchers(HttpMethod.GET, "/method/get").hasAnyAuthority("READ");
+					// SEGUNDO: CONFIGURAR LOS ENDPOINTS PRIVADOS		
+					// auths.requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("READ");
+					auths.requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("ADMIN", "DEVELOPER", "USER", "GUEST");					
+					auths.requestMatchers(HttpMethod.POST, "/api/**").hasAnyRole("ADMIN", "DEVELOPER");
+					auths.requestMatchers(HttpMethod.PUT, "/api/**").hasAnyRole("ADMIN", "DEVELOPER");
+					auths.requestMatchers(HttpMethod.DELETE, "/api/**").hasAnyRole("ADMIN");
 
 					// TERCERO: CONFIGURAR EL RESTO DE ENDPOINTS - NO ESPECIFICADOS
 					// auths.anyRequest().authenticated(); // CREDENCIALES VALIDAS, ENTONCES LA
@@ -63,7 +59,7 @@ public class SecurityConfig {
 	}
 	// PASO 2: CONFIGURANDO AUTHENTICATION MANAGER
 	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+	AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
 			throws Exception {
 		return authenticationConfiguration.getAuthenticationManager();
 	}
@@ -74,7 +70,7 @@ public class SecurityConfig {
 	// PASO 4: SE CONFIGURO EL UserDetailsService COMO UN SERVICIO CON LA CLASE
 	// UserDetailsServiceImpl
 	@Bean
-	public AuthenticationProvider authenticationProvider(UserDetailsServiceImpl userDetailsService) {
+	AuthenticationProvider authenticationProvider(UserDetailsServiceImpl userDetailsService) {
 		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
 		provider.setPasswordEncoder(this.passwordEncoder());
 		provider.setUserDetailsService(userDetailsService);
@@ -84,7 +80,7 @@ public class SecurityConfig {
 
 	// PASO 4: CONFIGURANDO EL TIPO DE PasswordEncoder A UTILIZAR
 	@Bean
-	public PasswordEncoder passwordEncoder() {
+	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
 }

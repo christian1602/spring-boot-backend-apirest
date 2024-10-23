@@ -46,7 +46,7 @@ public class PermissionEntity {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id);
+		return Objects.hash(id, name);
 	}
 
 	@Override
@@ -58,6 +58,6 @@ public class PermissionEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		PermissionEntity other = (PermissionEntity) obj;
-		return Objects.equals(id, other.id);
+		return Objects.equals(id, other.id) && Objects.equals(name, other.name);
 	}  
 }

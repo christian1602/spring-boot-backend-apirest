@@ -67,10 +67,10 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 
 		// GENERAMOS Y RETORNAMOS EL Authentication
 		String username = this.jwtUtils.extractUsername(decodedJWT);
-		String stringAuthorities = this.jwtUtils.getEspecificClaim(decodedJWT, "authorities").asString();
+		String stringAuthorities = this.jwtUtils.getEspecificClaim(decodedJWT, "authorities").asString();		
 		
 		Collection<? extends GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList(stringAuthorities);
-
+		
 		return new UsernamePasswordAuthenticationToken(username, null, authorities);
 	}
 

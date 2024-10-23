@@ -40,18 +40,19 @@ public class SpringBootBackendApirestApplication {
 			RoleEntity adminRole = new RoleEntity();
 			adminRole.setRoleEnum(RoleEnum.ADMIN);
 			adminRole.setPermissions(Set.of(createPermission,readPermission,updatePermission,deletePermission));
-
-			RoleEntity userRole = new RoleEntity();
-			userRole.setRoleEnum(RoleEnum.USER);
-			userRole.setPermissions(Set.of(createPermission,readPermission));
-
-			RoleEntity guestRole = new RoleEntity();
-			guestRole.setRoleEnum(RoleEnum.GUEST);
-			guestRole.setPermissions(Set.of(readPermission));
-
+			
 			RoleEntity developerRole = new RoleEntity();
 			developerRole.setRoleEnum(RoleEnum.DEVELOPER);
 			developerRole.setPermissions(Set.of(createPermission,readPermission,updatePermission,deletePermission,refactorPermission));
+
+			RoleEntity userRole = new RoleEntity();
+			userRole.setRoleEnum(RoleEnum.USER);
+			userRole.setPermissions(Set.of(createPermission));
+			// userRole.setPermissions(Set.of(createPermission,readPermission));
+
+			RoleEntity guestRole = new RoleEntity();
+			guestRole.setRoleEnum(RoleEnum.GUEST);
+			guestRole.setPermissions(Set.of(readPermission));			
 
 			// CREATE USERS
 			UserEntity christianUser = new UserEntity();
@@ -63,6 +64,16 @@ public class SpringBootBackendApirestApplication {
 			christianUser.setAccountNoLocked(true);
 			christianUser.setCredentialNoExpired(true);
 			christianUser.setRoles(Set.of(adminRole));
+			
+			UserEntity bellaUser = new UserEntity();			
+			bellaUser.setEmail("bella@mail.com");
+			bellaUser.setUsername("bella");
+			bellaUser.setPassword("$2a$10$qG3wS1Evr6WNJIJof5TEXOV5CTIJZDrenVSSxqJ2kIWbq6HDydVNi");
+			bellaUser.setEnabled(true);
+			bellaUser.setAccountNoExpired(true);
+			bellaUser.setAccountNoLocked(true);
+			bellaUser.setCredentialNoExpired(true);
+			bellaUser.setRoles(Set.of(developerRole));
 			
 			UserEntity walterUser = new UserEntity();
 			walterUser.setEmail("walter@mail.com");
@@ -83,17 +94,6 @@ public class SpringBootBackendApirestApplication {
 			lizUser.setAccountNoLocked(true);
 			lizUser.setCredentialNoExpired(true);
 			lizUser.setRoles(Set.of(guestRole));
-
-			UserEntity bellaUser = new UserEntity();			
-			bellaUser.setEmail("bella@mail.com");
-			bellaUser.setUsername("bella");
-			bellaUser.setPassword("$2a$10$qG3wS1Evr6WNJIJof5TEXOV5CTIJZDrenVSSxqJ2kIWbq6HDydVNi");
-			bellaUser.setEnabled(true);
-			bellaUser.setAccountNoExpired(true);
-			bellaUser.setAccountNoLocked(true);
-			bellaUser.setCredentialNoExpired(true);
-			bellaUser.setRoles(Set.of(developerRole));
-
 
 			userRepository.saveAll(List.of(christianUser,walterUser,lizUser,bellaUser));
 		};

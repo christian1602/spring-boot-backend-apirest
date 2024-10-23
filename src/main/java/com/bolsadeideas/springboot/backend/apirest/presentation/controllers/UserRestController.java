@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,8 +27,9 @@ public class UserRestController {
 	public UserRestController(IUserService userService) {
 		this.userService = userService;		
 	}
-
+	
 	@GetMapping("/users")
+	@PreAuthorize("hasAuthority('READ')")
 	public List<UserDTO> index() {
 		return this.userService.findAll();
 	}

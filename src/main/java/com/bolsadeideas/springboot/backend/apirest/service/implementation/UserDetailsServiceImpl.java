@@ -142,4 +142,19 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 
 		return authorityList;
 	}
+	
+	/*
+	private List<SimpleGrantedAuthority> convertRolesToSimpleGrantedAuthorityList_V2(Set<RoleEntity> roles) {
+	    List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
+
+	    // Agrega las autoridades de los roles
+	    roles.forEach(role -> {
+	        authorityList.add(new SimpleGrantedAuthority("ROLE_" + role.getRoleEnum().name()));
+	        role.getPermissions().forEach(permission -> 
+	            authorityList.add(new SimpleGrantedAuthority(permission.getName())));
+	    });
+
+	    return authorityList;
+	}
+	*/
 }

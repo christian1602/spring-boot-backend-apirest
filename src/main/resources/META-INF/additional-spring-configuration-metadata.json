@@ -1,5 +1,17 @@
-{"properties": [{
-  "name": "external.api.url.posts",
-  "type": "java.lang.String",
-  "description": "A description for 'external.api.url.posts'"
-}]}
+{"properties": [
+  {
+    "name": "external.api.url.posts",
+    "type": "java.lang.String",
+    "description": "A description for 'external.api.url.posts'"
+  },
+  {
+    "name": "security.jwt.key.private",
+    "type": "java.lang.String",
+    "description": "A description for 'security.jwt.key.private'"
+  },
+  {
+    "name": "security.jwt.user.generator",
+    "type": "java.lang.String",
+    "description": "A description for 'security.jwt.user.generator'"
+  }
+]}
