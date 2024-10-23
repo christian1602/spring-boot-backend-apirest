@@ -58,9 +58,9 @@ public class ClienteServiceImpl implements IClienteService {
 		ClienteEntity clienteEntity = this.clienteRepository.findById(id)
 				.orElseThrow(() -> new ClienteNotFoundException("Cliente not found with ID: ".concat(id.toString())));
 		
-		clienteEntity.setNombre(clienteDTO.getNombre());
-		clienteEntity.setApellido(clienteDTO.getApellido());
-		clienteEntity.setEmail(clienteDTO.getEmail());
+		clienteEntity.setNombre(clienteDTO.nombre());
+		clienteEntity.setApellido(clienteDTO.apellido());
+		clienteEntity.setEmail(clienteDTO.email());
 		
 		ClienteEntity updatedClienteEntity = this.clienteRepository.save(clienteEntity); 
 		

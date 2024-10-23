@@ -57,7 +57,7 @@ public class CategoryServiceImpl implements ICategoryService {
 		CategoryEntity existingCategoryEntity = this.categoryRepository.findById(id)
 				.orElseThrow(() -> new CategoryNotFoundException("Category not found with ID: ".concat(id.toString())));
 		
-		existingCategoryEntity.setName(categoryDTO.getName());
+		existingCategoryEntity.setName(categoryDTO.name());
 		
 		CategoryEntity updatedCategoryEntity = this.categoryRepository.save(existingCategoryEntity);
 		return this.categoryMapper.categoryEntityToCategoryDTO(updatedCategoryEntity);

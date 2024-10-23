@@ -51,8 +51,8 @@ public class PostServiceImpl implements IPostService {
 	@Override
 	@Transactional
 	public PostDTO save(PostDTO postDTO) {
-		UserEntity userEntitY = this.userRepository.findById(postDTO.getUserId())
-				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(postDTO.getUserId().toString())));
+		UserEntity userEntitY = this.userRepository.findById(postDTO.userId())
+				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(postDTO.userId().toString())));
 		
 		PostEntity postEntity = this.postMapper.postDTOToPostEntity(postDTO);
 		postEntity.setUser(userEntitY);
@@ -67,15 +67,15 @@ public class PostServiceImpl implements IPostService {
 		PostEntity existingPostEntity = this.postRepository.findById(id)
 				.orElseThrow(() -> new PostNotFoundException("Post not found with ID: ".concat(id.toString())));
 		
-	    if (!existingPostEntity.getUser().getId().equals(postDTO.getUserId())) {
-	        throw new UserNotCreatorException("User with ID: ".concat(postDTO.getUserId().toString()).concat(" is not the creator of the Post"));
+	    if (!existingPostEntity.getUser().getId().equals(postDTO.userId())) {
+	        throw new UserNotCreatorException("User with ID: ".concat(postDTO.userId().toString()).concat(" is not the creator of the Post"));
 	    }
 	    
-	    UserEntity userEntity = this.userRepository.findById(postDTO.getUserId())
-				.orElseThrow(()-> new UserNotFoundException("User not found with ID: ".concat(postDTO.getUserId().toString())));
+	    UserEntity userEntity = this.userRepository.findById(postDTO.userId())
+				.orElseThrow(()-> new UserNotFoundException("User not found with ID: ".concat(postDTO.userId().toString())));
 		
-		existingPostEntity.setTitle(postDTO.getTitle());
-		existingPostEntity.setBody(postDTO.getBody());		
+		existingPostEntity.setTitle(postDTO.title());
+		existingPostEntity.setBody(postDTO.body());		
 		existingPostEntity.setUser(userEntity);
 		
 		PostEntity updatedPostEntity = this.postRepository.save(existingPostEntity);

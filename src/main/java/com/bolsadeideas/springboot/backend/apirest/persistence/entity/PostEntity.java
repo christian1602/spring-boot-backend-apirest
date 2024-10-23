@@ -69,7 +69,7 @@ public class PostEntity {
 
 	@Override
 	public String toString() {
-		return "PostEntity [id=" + id + ", title=" + title + ", body=" + body + ", user=" + (user != null ? user.getName() : "null")  + "]";
+		return "PostEntity [id=" + id + ", title=" + title + ", body=" + body + ", user=" + (user != null ? user.getUsername() : "null")  + "]";
 	}
 
 	@Override

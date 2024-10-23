@@ -74,7 +74,7 @@ public class ProfileEntity {
 
 	@Override
 	public String toString() {
-		return "Profile [id=" + id + ", bio=" + bio + ", website=" + website + ", user=" + (user != null ? user.getName() : "null") + "]";
+		return "Profile [id=" + id + ", bio=" + bio + ", website=" + website + ", user=" + (user != null ? user.getUsername() : "null") + "]";
 	}
 
 	@Override

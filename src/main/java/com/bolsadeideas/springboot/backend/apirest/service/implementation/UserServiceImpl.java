@@ -41,23 +41,22 @@ public class UserServiceImpl implements IUserService {
 				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(id.toString())));		
 		return this.userMapper.userEntityToUserDTO(userEntity);
 	}
-
+	/*
 	@Override
 	@Transactional
-	public UserDTO save(UserDTO userDTO) {
+	public CreateUserDTO save(CreateUserDTO userDTO) {
 		UserEntity userEntity = this.userMapper.UserDTOToUserEntity(userDTO);
 		UserEntity userEntitySaved = this.userRepository.save(userEntity);
 		return this.userMapper.userEntityToUserDTO(userEntitySaved);
 	}
-	
+	*/
 	@Override
 	public UserDTO update(Long id, UserDTO userDTO) {
 		UserEntity userEntity = this.userRepository.findById(id)
 				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(id.toString())));
 		
-		userEntity.setName(userDTO.getName());
-		userEntity.setUsername(userDTO.getUsername());
-		userEntity.setEmail(userDTO.getEmail());
+		userEntity.setUsername(userDTO.username());
+		userEntity.setEmail(userDTO.email());
 		
 		UserEntity updatedUserEntity = this.userRepository.save(userEntity);
 		

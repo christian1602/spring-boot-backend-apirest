@@ -52,8 +52,8 @@ public class ProfileServiceImpl implements IProfileService {
 	@Override
 	@Transactional
 	public ProfileDTO save(ProfileDTO profileDTO) {
-		UserEntity userEntity = this.userRepository.findById(profileDTO.getUserId())
-				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(profileDTO.getUserId().toString())));
+		UserEntity userEntity = this.userRepository.findById(profileDTO.userId())
+				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(profileDTO.userId().toString())));
 		
 		Optional<ProfileEntity> existingProfileEntityOptional = this.profileRepository.findByUserId(userEntity.getId());
 		

@@ -57,7 +57,7 @@ public class ProductServiceImpl implements IProductService {
 		ProductEntity existingProductEntity = this.productoRepository.findById(id)
 				.orElseThrow(() -> new ProductNotFoundException("Product not found with ID: ".concat(id.toString())));
 		
-		existingProductEntity.setName(productDTO.getName());
+		existingProductEntity.setName(productDTO.name());
 
 		ProductEntity updatedProductEntity = this.productoRepository.save(existingProductEntity);
 
