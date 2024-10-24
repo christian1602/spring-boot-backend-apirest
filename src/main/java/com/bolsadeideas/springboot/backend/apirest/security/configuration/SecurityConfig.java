@@ -16,7 +16,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.bolsadeideas.springboot.backend.apirest.security.filter.JwtTokenValidator;
 import com.bolsadeideas.springboot.backend.apirest.service.implementation.UserDetailsServiceImpl;
@@ -38,7 +38,7 @@ public class SecurityConfig {
 	SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 		return httpSecurity
 				.csrf(AbstractHttpConfigurer::disable)
-				// .httpBasic(Customizer.withDefaults())
+				// .httpBasic(Customizer.withDefaults()) NO USAMOS AUTENTICACION BASICA
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auths -> {
 					// PERMITIR ACCESO PUBLICO A SWAGGER
@@ -56,7 +56,8 @@ public class SecurityConfig {
 					// CONFIGURACION POR DEFECTO (PARA LOS NO ESPECIFICADOS)
 					auths.anyRequest().authenticated(); // CREDENCIALES VALIDAS, ENTONCES LA RESPUESTA ES 200 (OK)
 					// auths.anyRequest().denyAll(); // LA RESPUESTA SIEMPRE SERA 403 (FORBIDDEN)
-				}).addFilterBefore(new JwtTokenValidator(this.jwtUtils), BasicAuthenticationFilter.class)
+				}).addFilterBefore(new JwtTokenValidator(this.jwtUtils), UsernamePasswordAuthenticationFilter.class) // DEBIDO A QUE TENEMOS UN LOGIN
+				//addFilterBefore(new JwtTokenValidator(this.jwtUtils), BasicAuthenticationFilter.class) NO USAMOS AUTENTICACION BASICA
 				.build();
 	}
 	// PASO 2: CONFIGURANDO AUTHENTICATION MANAGER
