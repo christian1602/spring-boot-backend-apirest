@@ -1,4 +1,4 @@
-package com.bolsadeideas.springboot.backend.apirest.configuration;
+package com.bolsadeideas.springboot.backend.apirest.security.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
-import com.bolsadeideas.springboot.backend.apirest.configuration.filter.JwtTokenValidator;
+import com.bolsadeideas.springboot.backend.apirest.security.filter.JwtTokenValidator;
 import com.bolsadeideas.springboot.backend.apirest.service.implementation.UserDetailsServiceImpl;
 import com.bolsadeideas.springboot.backend.apirest.utils.JwtUtils;
 

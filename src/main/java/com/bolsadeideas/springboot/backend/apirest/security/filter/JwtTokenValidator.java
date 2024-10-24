@@ -1,4 +1,4 @@
-package com.bolsadeideas.springboot.backend.apirest.configuration.filter;
+package com.bolsadeideas.springboot.backend.apirest.security.filter;
 
 import java.io.IOException;
 import java.util.Collection;

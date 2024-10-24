@@ -7,8 +7,8 @@ import java.util.stream.StreamSupport;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.bolsadeideas.springboot.backend.apirest.exceptions.CategoryAlreadyExistsInProductCategoryException;
-import com.bolsadeideas.springboot.backend.apirest.exceptions.CategoryNotFoundException;
+import com.bolsadeideas.springboot.backend.apirest.exception.CategoryAlreadyExistsInProductCategoryException;
+import com.bolsadeideas.springboot.backend.apirest.exception.CategoryNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.mappers.CategoryMapper;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.CategoryEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.ICategoryRepository;

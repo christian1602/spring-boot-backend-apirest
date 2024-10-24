@@ -1,4 +1,4 @@
-package com.bolsadeideas.springboot.backend.apirest.presentation.controllers;
+package com.bolsadeideas.springboot.backend.apirest.presentation.controller;
 
 import java.util.HashMap;
 import java.util.List;

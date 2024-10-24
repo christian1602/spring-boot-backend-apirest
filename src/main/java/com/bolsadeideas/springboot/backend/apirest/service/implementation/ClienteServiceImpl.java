@@ -7,7 +7,7 @@ import java.util.stream.StreamSupport;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.bolsadeideas.springboot.backend.apirest.exceptions.ClienteNotFoundException;
+import com.bolsadeideas.springboot.backend.apirest.exception.ClienteNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.mappers.ClienteMapper;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.ClienteEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IClienteRepository;

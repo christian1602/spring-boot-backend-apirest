@@ -7,8 +7,8 @@ import java.util.stream.StreamSupport;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.bolsadeideas.springboot.backend.apirest.exceptions.ProductAlreadyExistsInProductCategoryException;
-import com.bolsadeideas.springboot.backend.apirest.exceptions.ProductNotFoundException;
+import com.bolsadeideas.springboot.backend.apirest.exception.ProductAlreadyExistsInProductCategoryException;
+import com.bolsadeideas.springboot.backend.apirest.exception.ProductNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.mappers.ProductMapper;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.ProductEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IProductRepository;

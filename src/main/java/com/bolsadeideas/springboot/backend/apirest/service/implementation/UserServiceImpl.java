@@ -7,7 +7,7 @@ import java.util.stream.StreamSupport;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.bolsadeideas.springboot.backend.apirest.exceptions.UserNotFoundException;
+import com.bolsadeideas.springboot.backend.apirest.exception.UserNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.mappers.UserMapper;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.UserEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IUserRepository;

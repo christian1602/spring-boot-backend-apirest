@@ -1,4 +1,4 @@
-package com.bolsadeideas.springboot.backend.apirest.exceptions;
+package com.bolsadeideas.springboot.backend.apirest.exception.advice;
 
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +11,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import com.bolsadeideas.springboot.backend.apirest.exception.CategoryAlreadyExistsInProductCategoryException;
+import com.bolsadeideas.springboot.backend.apirest.exception.CategoryNotFoundException;
+import com.bolsadeideas.springboot.backend.apirest.exception.ClienteNotFoundException;
+import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataException;
+import com.bolsadeideas.springboot.backend.apirest.exception.PostNotFoundException;
+import com.bolsadeideas.springboot.backend.apirest.exception.ProductAlreadyExistsInProductCategoryException;
+import com.bolsadeideas.springboot.backend.apirest.exception.ProductCategoryNotFoundException;
+import com.bolsadeideas.springboot.backend.apirest.exception.ProductNotFoundException;
+import com.bolsadeideas.springboot.backend.apirest.exception.ProfileNotFoundException;
+import com.bolsadeideas.springboot.backend.apirest.exception.UserAlreadyHasProfileException;
+import com.bolsadeideas.springboot.backend.apirest.exception.UserNotCreatorException;
+import com.bolsadeideas.springboot.backend.apirest.exception.UserNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {

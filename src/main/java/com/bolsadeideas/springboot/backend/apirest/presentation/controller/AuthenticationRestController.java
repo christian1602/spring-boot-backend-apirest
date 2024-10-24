@@ -1,4 +1,4 @@
-package com.bolsadeideas.springboot.backend.apirest.presentation.controllers;
+package com.bolsadeideas.springboot.backend.apirest.presentation.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

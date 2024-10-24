@@ -1,4 +1,4 @@
-package com.bolsadeideas.springboot.backend.apirest.presentation.controllers;
+package com.bolsadeideas.springboot.backend.apirest.presentation.controller;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bolsadeideas.springboot.backend.apirest.exceptions.InvalidDataException;
+import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataException;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.CategoryDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.ICategoryService;
 

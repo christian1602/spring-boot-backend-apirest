@@ -8,10 +8,10 @@ import java.util.stream.StreamSupport;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.bolsadeideas.springboot.backend.apirest.exceptions.CategoryNotFoundException;
-import com.bolsadeideas.springboot.backend.apirest.exceptions.ProductAndCategoryAlreadyExistsInProductCategoryException;
-import com.bolsadeideas.springboot.backend.apirest.exceptions.ProductCategoryNotFoundException;
-import com.bolsadeideas.springboot.backend.apirest.exceptions.ProductNotFoundException;
+import com.bolsadeideas.springboot.backend.apirest.exception.CategoryNotFoundException;
+import com.bolsadeideas.springboot.backend.apirest.exception.ProductAndCategoryAlreadyExistsInProductCategoryException;
+import com.bolsadeideas.springboot.backend.apirest.exception.ProductCategoryNotFoundException;
+import com.bolsadeideas.springboot.backend.apirest.exception.ProductNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.mappers.ProductCategoryMapper;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.CategoryEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.ProductCategoryEntity;
