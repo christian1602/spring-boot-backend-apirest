@@ -18,6 +18,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.bolsadeideas.springboot.backend.apirest.exception.InvalidRefreshTokenException;
+import com.bolsadeideas.springboot.backend.apirest.exception.InvalidTypeRefreshTokenException;
+import com.bolsadeideas.springboot.backend.apirest.exception.RolesSpecifiedNotExist;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.RoleEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.UserEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IRoleRepository;
@@ -33,25 +36,27 @@ import com.bolsadeideas.springboot.backend.apirest.utils.JwtUtils;
 public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserService {
 
 	private final IUserRepository userRepository;
-	private final IRoleRepository roleRepository;
+	private final IRoleRepository roleRepository;	
+	private final PasswordEncoder passwordEncoder;	
 	private final JwtUtils jwtUtils;
-	private final PasswordEncoder passwordEncoder;
 
-	public UserDetailsServiceImpl(IUserRepository userRepository, IRoleRepository roleRepository, JwtUtils jwtUtils,
-			PasswordEncoder passwordEncoder) {
+	public UserDetailsServiceImpl(
+			IUserRepository userRepository, 
+			IRoleRepository roleRepository, 			
+			PasswordEncoder passwordEncoder,			
+			JwtUtils jwtUtils) {
 		this.userRepository = userRepository;
-		this.roleRepository = roleRepository;
-		this.jwtUtils = jwtUtils;
+		this.roleRepository = roleRepository;		
 		this.passwordEncoder = passwordEncoder;
+		this.jwtUtils = jwtUtils;
 	}
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		UserEntity userEntityFound = this.userRepository.findUserEntityByUsername(username)
-				.orElseThrow(() -> new UsernameNotFoundException("El usuario " + username + " no existe"));
+				.orElseThrow(() -> new UsernameNotFoundException("Username: ".concat(username).concat(" not found")));
 
-		List<SimpleGrantedAuthority> authorityList = this
-				.convertRolesToSimpleGrantedAuthorityList(userEntityFound.getRoles());
+		List<SimpleGrantedAuthority> authorityList = this.convertRolesToSimpleGrantedAuthorityList(userEntityFound.getRoles());
 
 		return new User(
 				userEntityFound.getUsername(),
@@ -64,16 +69,18 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 	}
 
 	@Override
-	public AuthResponseDTO createUser(CreateUserDTO authCreateUserDTO) {
-		String email = authCreateUserDTO.email();
-		String username = authCreateUserDTO.username();
-		String password = authCreateUserDTO.password();		
-		List<String> roleRequest = authCreateUserDTO.authRolesDTO().roleListName();
+	public AuthResponseDTO createUser(CreateUserDTO createUserDTO) {
+		// INICIO DE UN POSIBLE MAPPER PARA CONVERTIR UN CreateUserDTO A UN UserEntity
+		// PERO DEBIDO A SU COMPLEJIDAD Y VALIDACIONES ADICIONALES, SE REALIZA MANUALMENTE 
+		String email = createUserDTO.email();
+		String username = createUserDTO.username();
+		String password = createUserDTO.password();		
+		List<String> roleRequest = createUserDTO.authRolesDTO().roleListName();
 
 		Set<RoleEntity> roleEntitySet = new HashSet<>(this.roleRepository.findRoleEntityByRoleEnumIn(roleRequest));
 
 		if (roleEntitySet.isEmpty()) {
-			throw new IllegalArgumentException("The roles specified does not exist");
+			throw new RolesSpecifiedNotExist("Roles specified does not exist to username: ".concat(username));
 		}
 		
 		UserEntity userEntity = new UserEntity();
@@ -84,20 +91,22 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 		userEntity.setAccountNoLocked(true);
 		userEntity.setAccountNoExpired(true);
 		userEntity.setCredentialNoExpired(true);
-		userEntity.setRoles(roleEntitySet);		
+		userEntity.setRoles(roleEntitySet);
+		// FIN DE UN POSIBLE MAPPER PARA CONVERTIR N CreateUserDTO A UN UserEntity
 
-		UserEntity userCreated = this.userRepository.save(userEntity);
-		List<SimpleGrantedAuthority> authorityList = this.convertRolesToSimpleGrantedAuthorityList(userCreated.getRoles());
+		UserEntity userEntityCreated = this.userRepository.save(userEntity);
+		
+		List<SimpleGrantedAuthority> authorityList = this.convertRolesToSimpleGrantedAuthorityList(userEntityCreated.getRoles());
 
 		Authentication authentication = new UsernamePasswordAuthenticationToken(
-				userCreated.getUsername(),
-				userCreated.getPassword(),
+				userEntityCreated.getUsername(),
+				userEntityCreated.getPassword(),
 				authorityList);
 
 		String accessToken = this.jwtUtils.createToken(authentication);
 		String refreshToken = this.jwtUtils.createRefreshToken(authentication);
 		
-		return new AuthResponseDTO(userCreated.getUsername(), "User created successfuly", accessToken, refreshToken, true);
+		return new AuthResponseDTO(userEntityCreated.getUsername(), "User created successfuly", accessToken, refreshToken, true);
 	}
 	
 	@Override
@@ -119,18 +128,20 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 	}
 	
 	private Authentication authenticate(String username, String password) {
-		UserDetails userDetails = this.loadUserByUsername(username);
-
-		if (userDetails == null) {
+		
+		UserDetails userDetails;
+		
+		try {
+			userDetails = this.loadUserByUsername(username);
+		} catch(UsernameNotFoundException ex){
 			throw new BadCredentialsException("Invalid username");
-		}
-
+		}		
+		
 		if (!passwordEncoder.matches(password, userDetails.getPassword())) {
 			throw new BadCredentialsException("Invalid password");
 		}
 
-		return new UsernamePasswordAuthenticationToken(username, userDetails.getPassword(),
-				userDetails.getAuthorities());
+		return new UsernamePasswordAuthenticationToken(username, userDetails.getPassword(),userDetails.getAuthorities());
 	}
 
 	private List<SimpleGrantedAuthority> convertRolesToSimpleGrantedAuthorityList(Set<RoleEntity> roles) {
@@ -156,20 +167,26 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 		try {
 			decodedJWT = this.jwtUtils.validateToken(refreshToken.refreshToken());
 		} catch(Exception e) {
-			return new AuthResponseDTO(null, "Invalid refresh token", null, null, false);
+			throw new InvalidRefreshTokenException("Invalid refresh token");
 		}
 		
 		if (!this.jwtUtils.isRefreshToken(decodedJWT)) {
-			return new AuthResponseDTO(null, "Invalid refresh token", null, null, false); 
+			throw new InvalidTypeRefreshTokenException("Invalid type refresh token"); 
 		}
 		
 		 // CARGAMOS AL USUARIO DESDE EL TOKEN
         String username = this.jwtUtils.extractUsername(decodedJWT);
-        UserDetails userDetails = this.loadUserByUsername(username);
+        
+        UserDetails userDetails;
+        
+        try {
+        	userDetails = this.loadUserByUsername(username);	
+        } catch(UsernameNotFoundException ex){
+			throw new BadCredentialsException("Invalid username");
+		}        
         
 		// GENERAMOS UN NUEVO ACCESS TOKEN
-        Authentication authentication = new UsernamePasswordAuthenticationToken(username, userDetails.getPassword(),
-				userDetails.getAuthorities());
+        Authentication authentication = new UsernamePasswordAuthenticationToken(username, userDetails.getPassword(),userDetails.getAuthorities());
         		
         String newAccessToken = this.jwtUtils.createToken(authentication);
         

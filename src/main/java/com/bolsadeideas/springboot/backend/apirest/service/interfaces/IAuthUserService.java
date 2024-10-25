@@ -7,7 +7,7 @@ import com.bolsadeideas.springboot.backend.apirest.presentation.dto.RefreshToken
 
 public interface IAuthUserService {
 	
-	AuthResponseDTO createUser(CreateUserDTO authCreateUserDTO);
+	AuthResponseDTO createUser(CreateUserDTO createUserDTO);
 	AuthResponseDTO loginUser(AuthLoginDTO authLoginDTO);	
 	AuthResponseDTO refreshToken(RefreshTokenDTO refreshToken);
 }

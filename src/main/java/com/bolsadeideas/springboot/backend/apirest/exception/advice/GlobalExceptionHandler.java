@@ -9,6 +9,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -17,11 +19,13 @@ import com.bolsadeideas.springboot.backend.apirest.exception.CategoryAlreadyExis
 import com.bolsadeideas.springboot.backend.apirest.exception.CategoryNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.exception.ClienteNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataException;
+import com.bolsadeideas.springboot.backend.apirest.exception.InvalidRefreshTokenException;
 import com.bolsadeideas.springboot.backend.apirest.exception.PostNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.exception.ProductAlreadyExistsInProductCategoryException;
 import com.bolsadeideas.springboot.backend.apirest.exception.ProductCategoryNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.exception.ProductNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.exception.ProfileNotFoundException;
+import com.bolsadeideas.springboot.backend.apirest.exception.RolesSpecifiedNotExist;
 import com.bolsadeideas.springboot.backend.apirest.exception.UserAlreadyHasProfileException;
 import com.bolsadeideas.springboot.backend.apirest.exception.UserNotCreatorException;
 import com.bolsadeideas.springboot.backend.apirest.exception.UserNotFoundException;
@@ -44,6 +48,22 @@ public class GlobalExceptionHandler {
 		response.put("error", ex.getMessage());
 		return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 	}
+	
+	@ExceptionHandler(UsernameNotFoundException.class)
+	public ResponseEntity<Map<String,Object>> handleUsernameNotFoundException(UsernameNotFoundException ex){
+		Map<String, Object> response = new HashMap<>();		
+		response.put("mensaje", "Username not found");
+		response.put("error", ex.getMessage());
+		return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	}
+	
+	@ExceptionHandler(RolesSpecifiedNotExist.class)
+	public ResponseEntity<Map<String,Object>> handleRolesSpecifiedNotExist(RolesSpecifiedNotExist ex){
+		Map<String, Object> response = new HashMap<>();
+		response.put("mensaje", "Roles specified does not exist");
+		response.put("error", ex.getMessage());
+		return new ResponseEntity<>(response, HttpStatus.CONFLICT);		
+	}	
 	
 	@ExceptionHandler(PostNotFoundException.class)
 	public ResponseEntity<Map<String,Object>> handlePostNotFoundException(PostNotFoundException ex){
@@ -117,6 +137,14 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(response, HttpStatus.CONFLICT);
 	}
 	
+	@ExceptionHandler(InvalidRefreshTokenException.class)
+	public ResponseEntity<Map<String,Object>> handleInvalidRefreshTokenException(InvalidRefreshTokenException ex){
+		Map<String, Object> response = new HashMap<>();
+		response.put("mensaje", "Invalid refresh token");
+		response.put("error", ex.getMessage());
+		return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+	}
+	
 	@ExceptionHandler(InvalidDataException.class)
 	public ResponseEntity<Map<String,Object>> handleInvalidDataException(InvalidDataException ex){
 		Map<String, Object> response = new HashMap<>();
@@ -129,7 +157,15 @@ public class GlobalExceptionHandler {
 
         response.put("errors", errors);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-	}	
+	}
+	
+	@ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<?> handleBadCredentials(BadCredentialsException ex) {
+		Map<String, Object> response = new HashMap<>();
+		response.put("mensaje", "Invalid username or password");
+		response.put("error", ex.getMessage());
+		return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);        
+    }
 	
 	@ExceptionHandler(DataAccessException.class)
 	public ResponseEntity<Map<String,Object>> handleDataAccessException(DataAccessException ex){

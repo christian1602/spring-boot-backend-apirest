@@ -2,13 +2,14 @@ package com.bolsadeideas.springboot.backend.apirest.presentation.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataException;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthLoginDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthResponseDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.CreateUserDTO;
@@ -24,7 +25,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = { "http://localhost:4200 " })
+@CrossOrigin(origins = {"http://localhost:4200"})
 @Tag(name = "Authentication", description = "Controller for Authentication")
 public class AuthenticationRestController {
 	
@@ -35,17 +36,13 @@ public class AuthenticationRestController {
     }
     
     @PostMapping("/sign-up")
-    public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody CreateUserDTO createUserDTO){
-        try {
-            AuthResponseDTO response = this.userDetailsService.createUser(createUserDTO);
-            return new ResponseEntity<AuthResponseDTO>(response, HttpStatus.CREATED);
-        } catch(IllegalArgumentException ex){
-            // Esta excepción se lanza si los roles no existen
-            return new ResponseEntity<AuthResponseDTO>(new AuthResponseDTO(createUserDTO.username(), ex.getMessage(), null, null, false), HttpStatus.BAD_REQUEST);
-        } catch(Exception ex) {
-            // Manejo de errores genéricos
-            return new ResponseEntity<AuthResponseDTO>(new AuthResponseDTO(createUserDTO.username(), "Error during registration", null, null, false), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public ResponseEntity<?> register(@Valid @RequestBody CreateUserDTO createUserDTO, BindingResult result){
+    	if (result.hasErrors()) {
+			throw new InvalidDataException(result);
+		}
+    	
+    	AuthResponseDTO authResponseDTO = this.userDetailsService.createUser(createUserDTO);
+    	return new ResponseEntity<AuthResponseDTO>(authResponseDTO, HttpStatus.CREATED);
     }
     
     @PostMapping("/log-in")
@@ -72,21 +69,22 @@ public class AuthenticationRestController {
     						)
     				}
     		)
-    public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody AuthLoginDTO authLoginDTO){
-        try {
-            return new ResponseEntity<AuthResponseDTO>(this.userDetailsService.loginUser(authLoginDTO), HttpStatus.OK);
-        } catch(BadCredentialsException ex){
-            // Manejo de errores: devolver 401 Unauthorized
-            return new ResponseEntity<AuthResponseDTO>(new AuthResponseDTO(authLoginDTO.username(), ex.getMessage(), null, null, false), HttpStatus.UNAUTHORIZED);
-        } catch (Exception ex) {
-            // Manejo de errores genéricos
-            return new ResponseEntity<AuthResponseDTO>(new AuthResponseDTO(authLoginDTO.username(), "Error during login", null, null, false), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public ResponseEntity<?> login(@Valid @RequestBody AuthLoginDTO authLoginDTO, BindingResult result){
+    	if (result.hasErrors()) {
+			throw new InvalidDataException(result);
+		}
+    	
+    	AuthResponseDTO authResponseDTO = this.userDetailsService.loginUser(authLoginDTO);
+    	return new ResponseEntity<AuthResponseDTO>(authResponseDTO, HttpStatus.OK);
     }
     
     @PostMapping("/refresh-token")
-    public ResponseEntity<AuthResponseDTO> refreshToken(@Valid @RequestBody RefreshTokenDTO refreshToken){
-    	AuthResponseDTO response = this.userDetailsService.refreshToken(refreshToken);
-    	return new ResponseEntity<AuthResponseDTO>(response, HttpStatus.OK);
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenDTO refreshToken, BindingResult result){
+    	if (result.hasErrors()) {
+			throw new InvalidDataException(result);
+		}
+    	
+    	AuthResponseDTO authResponseDTO = this.userDetailsService.refreshToken(refreshToken);
+    	return new ResponseEntity<AuthResponseDTO>(authResponseDTO, HttpStatus.OK);
     }
 }
