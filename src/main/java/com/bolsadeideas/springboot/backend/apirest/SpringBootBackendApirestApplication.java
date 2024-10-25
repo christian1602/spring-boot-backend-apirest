@@ -47,11 +47,11 @@ public class SpringBootBackendApirestApplication {
 
 			RoleEntity userRole = new RoleEntity();
 			userRole.setRoleEnum(RoleEnum.USER);
-			userRole.setPermissions(Set.of(readPermission));
+			userRole.setPermissions(Set.of(createPermission,readPermission));
 
 			RoleEntity guestRole = new RoleEntity();
 			guestRole.setRoleEnum(RoleEnum.GUEST);
-			guestRole.setPermissions(Set.of(readPermission));			
+			guestRole.setPermissions(Set.of(readPermission));
 
 			// CREATE USERS
 			UserEntity christianUser = new UserEntity();

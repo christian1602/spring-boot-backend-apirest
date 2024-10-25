@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthLoginDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthResponseDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.CreateUserDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.RefreshTokenDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.implementation.UserDetailsServiceImpl;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,10 +41,10 @@ public class AuthenticationRestController {
             return new ResponseEntity<AuthResponseDTO>(response, HttpStatus.CREATED);
         } catch(IllegalArgumentException ex){
             // Esta excepción se lanza si los roles no existen
-            return new ResponseEntity<AuthResponseDTO>(new AuthResponseDTO(createUserDTO.username(), ex.getMessage(), null, false), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<AuthResponseDTO>(new AuthResponseDTO(createUserDTO.username(), ex.getMessage(), null, null, false), HttpStatus.BAD_REQUEST);
         } catch(Exception ex) {
             // Manejo de errores genéricos
-            return new ResponseEntity<AuthResponseDTO>(new AuthResponseDTO(createUserDTO.username(), "Error during registration", null, false), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<AuthResponseDTO>(new AuthResponseDTO(createUserDTO.username(), "Error during registration", null, null, false), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     
@@ -76,10 +77,16 @@ public class AuthenticationRestController {
             return new ResponseEntity<AuthResponseDTO>(this.userDetailsService.loginUser(authLoginDTO), HttpStatus.OK);
         } catch(BadCredentialsException ex){
             // Manejo de errores: devolver 401 Unauthorized
-            return new ResponseEntity<AuthResponseDTO>(new AuthResponseDTO(authLoginDTO.username(), ex.getMessage(), null, false), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<AuthResponseDTO>(new AuthResponseDTO(authLoginDTO.username(), ex.getMessage(), null, null, false), HttpStatus.UNAUTHORIZED);
         } catch (Exception ex) {
             // Manejo de errores genéricos
-            return new ResponseEntity<AuthResponseDTO>(new AuthResponseDTO(authLoginDTO.username(), "Error during login", null, false), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<AuthResponseDTO>(new AuthResponseDTO(authLoginDTO.username(), "Error during login", null, null, false), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+    
+    @PostMapping("/refresh-token")
+    public ResponseEntity<AuthResponseDTO> refreshToken(@Valid @RequestBody RefreshTokenDTO refreshToken){
+    	AuthResponseDTO response = this.userDetailsService.refreshToken(refreshToken);
+    	return new ResponseEntity<AuthResponseDTO>(response, HttpStatus.OK);
     }
 }

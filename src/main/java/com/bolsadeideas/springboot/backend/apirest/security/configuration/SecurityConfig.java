@@ -55,8 +55,8 @@ public class SecurityConfig {
 					// ENDPOINTS PRIVADOS
 					// EJEMPLO DE DAR UN ROLE_USER QUE SOLO TIENE PERMISO DE READ
 					// Y EN EL CONTROLADOR SOLO ENTRARA AL PERMISO READ MAS NO AL CREATE
-					auths.requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole("USER");
-					auths.requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAnyRole("USER");
+					auths.requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole("ADMIN","DEVELOPER");
+					auths.requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAnyRole("ADMIN","DEVELOPER");
 					
 					// Configurar acceso a usuarios con ROLE_USER
 	                // auths.requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("READ"); // Permite acceso solo a READ

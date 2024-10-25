@@ -36,11 +36,11 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 			@NonNull HttpServletResponse response,
 			@NonNull FilterChain filterChain) throws ServletException, IOException {
 		// EXTRAER EL TOKEN JWT DE LA CABECERA: Authorization
-		String jwtToken = this.extractToken(request);
+		String accessToken = this.extractToken(request);
 
-		if (jwtToken != null){
+		if (accessToken != null){
 			// INTENTAR OBTENER LA AUTENTICACION A PARTIR DEL TOKEN JWT
-			Authentication authentication = this.getAuthentication(jwtToken);
+			Authentication authentication = this.getAuthentication(accessToken);
 			
 			if (authentication == null) {
 				response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"Invalid token, not Authorized at doFilterInternal");
@@ -55,12 +55,12 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 		filterChain.doFilter(request,response);
 	}
 
-	private Authentication getAuthentication(String jwtToken) {		
+	private Authentication getAuthentication(String accessToken) {		
 		// VALIDAR EL TOKEN Y CAPTURAR EXCEPCIONES
 		DecodedJWT decodedJWT;
 
 		try {
-			decodedJWT = this.jwtUtils.validateToken(jwtToken);
+			decodedJWT = this.jwtUtils.validateToken(accessToken);
 		} catch(Exception e){
 			return null;
 		}

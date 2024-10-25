@@ -42,10 +42,27 @@ public class JwtUtils {
 				.withSubject(username)
 				.withClaim("authorities", authorities)
 				.withIssuedAt(new Date())
-				.withExpiresAt(new Date(System.currentTimeMillis() + 1800000))
+				.withExpiresAt(new Date(System.currentTimeMillis() + 1000 * 60 * 30)) // 30 MINUTOS
 				.withJWTId(UUID.randomUUID().toString())
 				.withNotBefore(new Date(System.currentTimeMillis()))
 				.sign(algorithm);
+	}
+	
+	public String createRefreshToken(Authentication authentication) {
+		Algorithm algorithm = Algorithm.HMAC256(this.privateKey);
+		String username = authentication.getPrincipal().toString();		
+
+		return JWT.create()
+				.withIssuer(this.userGenerator)
+				.withSubject(username)
+				.withClaim("type", "refresh")
+				.withIssuedAt(new Date())
+				.withExpiresAt(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7)) // 7 DIAS
+				.sign(algorithm);
+	}
+	
+	public boolean isRefreshToken(DecodedJWT decodedJWT) {
+		return "refresh".equals(decodedJWT.getClaim("type").asString());
 	}
 
 	public DecodedJWT validateToken(String token) {

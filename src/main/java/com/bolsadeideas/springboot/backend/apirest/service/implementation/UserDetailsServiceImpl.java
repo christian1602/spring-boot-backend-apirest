@@ -17,11 +17,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.RoleEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.UserEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IRoleRepository;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IUserRepository;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.CreateUserDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.RefreshTokenDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IAuthUserService;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthLoginDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthResponseDTO;
@@ -93,7 +95,9 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 				authorityList);
 
 		String accessToken = this.jwtUtils.createToken(authentication);
-		return new AuthResponseDTO(userCreated.getUsername(), "User created successfuly", accessToken, true);
+		String refreshToken = this.jwtUtils.createRefreshToken(authentication);
+		
+		return new AuthResponseDTO(userCreated.getUsername(), "User created successfuly", accessToken, refreshToken, true);
 	}
 	
 	@Override
@@ -109,7 +113,9 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 
 		String accessToken = this.jwtUtils.createToken(authentication);
-		return new AuthResponseDTO(username, "User loged successfuly", accessToken, true);
+		String refreshToken = this.jwtUtils.createRefreshToken(authentication);
+		
+		return new AuthResponseDTO(username, "User loged successfuly", accessToken, refreshToken, true);
 	}
 	
 	private Authentication authenticate(String username, String password) {
@@ -141,6 +147,33 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 				.map(permission -> new SimpleGrantedAuthority(permission.getName()))).toList());
 
 		return authorityList;
+	}
+
+	@Override
+	public AuthResponseDTO refreshToken(RefreshTokenDTO refreshToken) {
+		DecodedJWT decodedJWT;
+		
+		try {
+			decodedJWT = this.jwtUtils.validateToken(refreshToken.refreshToken());
+		} catch(Exception e) {
+			return new AuthResponseDTO(null, "Invalid refresh token", null, null, false);
+		}
+		
+		if (!this.jwtUtils.isRefreshToken(decodedJWT)) {
+			return new AuthResponseDTO(null, "Invalid refresh token", null, null, false); 
+		}
+		
+		 // CARGAMOS AL USUARIO DESDE EL TOKEN
+        String username = this.jwtUtils.extractUsername(decodedJWT);
+        UserDetails userDetails = this.loadUserByUsername(username);
+        
+		// GENERAMOS UN NUEVO ACCESS TOKEN
+        Authentication authentication = new UsernamePasswordAuthenticationToken(username, userDetails.getPassword(),
+				userDetails.getAuthorities());
+        		
+        String newAccessToken = this.jwtUtils.createToken(authentication);
+        
+		return new AuthResponseDTO(username, "Token refreshed successfully", newAccessToken, refreshToken.refreshToken(), true);
 	}
 	
 	/*
