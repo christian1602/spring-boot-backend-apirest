@@ -11,11 +11,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-public class CustomAccessDeniedHandler implements AccessDeniedHandler {
+public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
 	@Override
-	public void handle(HttpServletRequest request, HttpServletResponse response,
-			AccessDeniedException accessDeniedException) throws IOException, ServletException {
+	public void handle(
+			HttpServletRequest request, 
+			HttpServletResponse response,
+			AccessDeniedException accessDeniedException
+	) throws IOException, ServletException {
 		// ENVIAR UN ERROR 403 CUANDO EL ACCESO ES DENEGADO				
 		response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied: You do not have the necessary permissions");
 	}

@@ -18,7 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.bolsadeideas.springboot.backend.apirest.security.exception.CustomAccessDeniedHandler;
+import com.bolsadeideas.springboot.backend.apirest.security.exception.JwtAccessDeniedHandler;
 import com.bolsadeideas.springboot.backend.apirest.security.exception.JwtAuthenticationEntryPoint;
 import com.bolsadeideas.springboot.backend.apirest.security.filter.JwtTokenValidator;
 import com.bolsadeideas.springboot.backend.apirest.service.implementation.UserDetailsServiceImpl;
@@ -31,12 +31,12 @@ public class SecurityConfig {
 
 	private final JwtUtils jwtUtils;
 	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-	private final CustomAccessDeniedHandler customAccessDeniedHandler;
+	private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
-	public SecurityConfig(JwtUtils jwtUtils, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, CustomAccessDeniedHandler customAccessDeniedHandler) {
+	public SecurityConfig(JwtUtils jwtUtils, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, JwtAccessDeniedHandler jwtAccessDeniedHandler) {
 		this.jwtUtils = jwtUtils;
 		this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
-		this.customAccessDeniedHandler = customAccessDeniedHandler;
+		this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
 	}
 
 	// PASO 1: CONFIGURANDO SECURITY FILTER CHAIN SIN ANOTACIONES EN EL CONTROLADOR 
@@ -53,17 +53,21 @@ public class SecurityConfig {
 					auths.requestMatchers(HttpMethod.POST, "/auth/**").permitAll();
 
 					// ENDPOINTS PRIVADOS
-					// auths.requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("READ");
+					// EJEMPLO DE DAR UN ROLE_USER QUE SOLO TIENE PERMISO DE READ
+					// Y EN EL CONTROLADOR SOLO ENTRARA AL PERMISO READ MAS NO AL CREATE
+					auths.requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole("USER");
+					auths.requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAnyRole("USER");
 					
 					// Configurar acceso a usuarios con ROLE_USER
 	                // auths.requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("READ"); // Permite acceso solo a READ
 	                // auths.requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAuthority("CREATE"); // Permite acceso solo a CREATE
+	                // auths.requestMatchers(HttpMethod.DELETE, "/api/users/{id}").hasAuthority("DELETE"); // Permite acceso solo a DELETE
 	                
 	                // Permitir acceso a READ, CREATE y DELETE para ROLE_ADMIN
 	                // auths.requestMatchers(HttpMethod.DELETE, "/api/users/{id}").hasRole("ADMIN"); // Solo acceso para ADMIN
 					
 					// auths.requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("USER");
-					auths.requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("ADMIN", "DEVELOPER", "USER", "GUEST");					
+					// auths.requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("ADMIN", "DEVELOPER", "USER", "GUEST");					
 					// auths.requestMatchers(HttpMethod.POST, "/api/**").hasAnyRole("ADMIN", "DEVELOPER");
 					// auths.requestMatchers(HttpMethod.PUT, "/api/**").hasAnyRole("ADMIN", "DEVELOPER");
 					// auths.requestMatchers(HttpMethod.DELETE, "/api/**").hasAnyRole("ADMIN");
@@ -71,11 +75,11 @@ public class SecurityConfig {
 					// CONFIGURACION POR DEFECTO (PARA LOS NO ESPECIFICADOS)
 					auths.anyRequest().authenticated(); // CREDENCIALES VALIDAS, ENTONCES LA RESPUESTA ES 200 (OK)
 					// auths.anyRequest().denyAll(); // LA RESPUESTA SIEMPRE SERA 403 (FORBIDDEN)
-				})
+				})				
 				// CONFIGURA EL AuthenticationEntryPoint Y EL AccessDeniedHandler CORRECTAMENTE
-		        .exceptionHandling(exceptionHandling -> exceptionHandling
+				.exceptionHandling(exceptionHandling -> exceptionHandling
 						.authenticationEntryPoint(this.jwtAuthenticationEntryPoint) // PARA ERRORES 401
-						.accessDeniedHandler(this.customAccessDeniedHandler) // PARA ERRORES 403
+						.accessDeniedHandler(this.jwtAccessDeniedHandler) // PARA ERRORES 403
 				)
 		        .addFilterBefore(new JwtTokenValidator(this.jwtUtils), UsernamePasswordAuthenticationFilter.class) // DEBIDO A QUE TENEMOS UN LOGIN		        
 				//addFilterBefore(new JwtTokenValidator(this.jwtUtils), BasicAuthenticationFilter.class) NO USAMOS AUTENTICACION BASICA

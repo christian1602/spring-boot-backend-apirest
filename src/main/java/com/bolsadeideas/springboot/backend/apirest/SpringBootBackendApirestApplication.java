@@ -46,9 +46,8 @@ public class SpringBootBackendApirestApplication {
 			developerRole.setPermissions(Set.of(createPermission,readPermission,updatePermission,deletePermission,refactorPermission));
 
 			RoleEntity userRole = new RoleEntity();
-			userRole.setRoleEnum(RoleEnum.USER);			
-			userRole.setPermissions(Set.of(createPermission));
-			// userRole.setPermissions(Set.of(createPermission,readPermission,deletePermission));
+			userRole.setRoleEnum(RoleEnum.USER);
+			userRole.setPermissions(Set.of(readPermission));
 
 			RoleEntity guestRole = new RoleEntity();
 			guestRole.setRoleEnum(RoleEnum.GUEST);

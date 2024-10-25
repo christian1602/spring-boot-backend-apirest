@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,12 +29,13 @@ public class UserRestController {
 	}
 	
 	@GetMapping("/users")
-	// @PreAuthorize("hasAuthority('READ')")
+	@PreAuthorize("hasAuthority('READ')")
 	public List<UserDTO> index() {
 		return this.userService.findAll();
 	}
 
-	@GetMapping("/users/{id}")	
+	@GetMapping("/users/{id}")
+	@PreAuthorize("hasAuthority('CREATE')")
 	public ResponseEntity<?> show(@PathVariable Long id) {
 		UserDTO userDTO = this.userService.findById(id);
 		return new ResponseEntity<UserDTO>(userDTO, HttpStatus.OK);
@@ -70,6 +72,7 @@ public class UserRestController {
 	}
 	 */
 	@DeleteMapping("/users/{id}")
+	// @PreAuthorize("hasAuthority('DELETE')")
 	public ResponseEntity<?> delete(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
 
