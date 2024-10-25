@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-// import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +33,7 @@ public class UserRestController {
 		return this.userService.findAll();
 	}
 
-	@GetMapping("/users/{id}")
+	@GetMapping("/users/{id}")	
 	public ResponseEntity<?> show(@PathVariable Long id) {
 		UserDTO userDTO = this.userService.findById(id);
 		return new ResponseEntity<UserDTO>(userDTO, HttpStatus.OK);

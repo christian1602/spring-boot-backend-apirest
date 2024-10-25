@@ -18,6 +18,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.bolsadeideas.springboot.backend.apirest.security.exception.CustomAccessDeniedHandler;
+import com.bolsadeideas.springboot.backend.apirest.security.exception.JwtAuthenticationEntryPoint;
 import com.bolsadeideas.springboot.backend.apirest.security.filter.JwtTokenValidator;
 import com.bolsadeideas.springboot.backend.apirest.service.implementation.UserDetailsServiceImpl;
 import com.bolsadeideas.springboot.backend.apirest.utils.JwtUtils;
@@ -28,9 +30,13 @@ import com.bolsadeideas.springboot.backend.apirest.utils.JwtUtils;
 public class SecurityConfig {
 
 	private final JwtUtils jwtUtils;
+	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+	private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
-	public SecurityConfig(JwtUtils jwtUtils) {
+	public SecurityConfig(JwtUtils jwtUtils, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, CustomAccessDeniedHandler customAccessDeniedHandler) {
 		this.jwtUtils = jwtUtils;
+		this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
+		this.customAccessDeniedHandler = customAccessDeniedHandler;
 	}
 
 	// PASO 1: CONFIGURANDO SECURITY FILTER CHAIN SIN ANOTACIONES EN EL CONTROLADOR 
@@ -48,15 +54,30 @@ public class SecurityConfig {
 
 					// ENDPOINTS PRIVADOS
 					// auths.requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("READ");
+					
+					// Configurar acceso a usuarios con ROLE_USER
+	                // auths.requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("READ"); // Permite acceso solo a READ
+	                // auths.requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAuthority("CREATE"); // Permite acceso solo a CREATE
+	                
+	                // Permitir acceso a READ, CREATE y DELETE para ROLE_ADMIN
+	                // auths.requestMatchers(HttpMethod.DELETE, "/api/users/{id}").hasRole("ADMIN"); // Solo acceso para ADMIN
+					
+					// auths.requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("USER");
 					auths.requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("ADMIN", "DEVELOPER", "USER", "GUEST");					
-					auths.requestMatchers(HttpMethod.POST, "/api/**").hasAnyRole("ADMIN", "DEVELOPER");
-					auths.requestMatchers(HttpMethod.PUT, "/api/**").hasAnyRole("ADMIN", "DEVELOPER");
-					auths.requestMatchers(HttpMethod.DELETE, "/api/**").hasAnyRole("ADMIN");
+					// auths.requestMatchers(HttpMethod.POST, "/api/**").hasAnyRole("ADMIN", "DEVELOPER");
+					// auths.requestMatchers(HttpMethod.PUT, "/api/**").hasAnyRole("ADMIN", "DEVELOPER");
+					// auths.requestMatchers(HttpMethod.DELETE, "/api/**").hasAnyRole("ADMIN");
 
 					// CONFIGURACION POR DEFECTO (PARA LOS NO ESPECIFICADOS)
 					auths.anyRequest().authenticated(); // CREDENCIALES VALIDAS, ENTONCES LA RESPUESTA ES 200 (OK)
 					// auths.anyRequest().denyAll(); // LA RESPUESTA SIEMPRE SERA 403 (FORBIDDEN)
-				}).addFilterBefore(new JwtTokenValidator(this.jwtUtils), UsernamePasswordAuthenticationFilter.class) // DEBIDO A QUE TENEMOS UN LOGIN
+				})
+				// CONFIGURA EL AuthenticationEntryPoint Y EL AccessDeniedHandler CORRECTAMENTE
+		        .exceptionHandling(exceptionHandling -> exceptionHandling
+						.authenticationEntryPoint(this.jwtAuthenticationEntryPoint) // PARA ERRORES 401
+						.accessDeniedHandler(this.customAccessDeniedHandler) // PARA ERRORES 403
+				)
+		        .addFilterBefore(new JwtTokenValidator(this.jwtUtils), UsernamePasswordAuthenticationFilter.class) // DEBIDO A QUE TENEMOS UN LOGIN		        
 				//addFilterBefore(new JwtTokenValidator(this.jwtUtils), BasicAuthenticationFilter.class) NO USAMOS AUTENTICACION BASICA
 				.build();
 	}

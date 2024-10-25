@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+
 import com.bolsadeideas.springboot.backend.apirest.exception.CategoryAlreadyExistsInProductCategoryException;
 import com.bolsadeideas.springboot.backend.apirest.exception.CategoryNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.exception.ClienteNotFoundException;

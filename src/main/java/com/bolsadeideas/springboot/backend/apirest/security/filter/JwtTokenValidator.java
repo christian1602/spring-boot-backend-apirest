@@ -4,8 +4,12 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Optional;
 
+import javax.naming.AuthenticationException;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,6 +17,8 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bolsadeideas.springboot.backend.apirest.utils.JwtUtils;
 
@@ -37,41 +43,48 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 			@NonNull FilterChain filterChain) throws ServletException, IOException {
 		// EXTRAER EL TOKEN JWT DE LA CABECERA: Authorization
 		String jwtToken = this.extractToken(request);
-
+		
 		if (jwtToken != null) {
-			// INTENTAR OBTENER LA AUTENTICACION A PARTIR DEL TOKEN JWT
-			Authentication authentication = this.getAuthentication(jwtToken);
-
-			if (authentication != null) {
+			try {
+				// INTENTAR OBTENER LA AUTENTICACION A PARTIR DEL TOKEN JWT
+				Authentication authentication = this.getAuthentication(jwtToken);
 				SecurityContextHolder.getContext().setAuthentication(authentication);
-			} else {
-				response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"Invalid token, not Authorized at doFilterInternal");
-				return; // SALIR DEL FILTRO SI EL TOKEN NO ES VALIDO
-			}
+			} catch (BadCredentialsException ex) {
+				// MANEJO DE EXCEPCION PARA TOKEN INVALIDO
+		        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token: " + ex.getMessage());
+		        return; // SALIR DEL FILTRO SI EL TOKEN NO ES VÁLIDO
+	        } catch (TokenExpiredException ex) {
+	            // MANEJO SSPECIFICO PARA TOKEN EXPIRADO
+	            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has expired");
+	            return; // SALIR DEL FILTRO SI EL TOKEN HA EXPIRADO
+	        } catch (AuthenticationException ex) {
+	            // MANEJO DE CUALQUIER OTRA EXCEPCION DE AUTENTICACION
+	            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication failed: " + ex.getMessage());
+	            return; // SALIR DEL FILTRO EN CASO DE FALLA DE AUTENTICACIÓN
+	        }
 		}
-
+		
 		// CONTINUAR CON EL SIGUIENTE FILTRO
 		// filterChain MANEJA LA SECUENCIA DE FILTROS
 		filterChain.doFilter(request, response);
 	}
 
-	private Authentication getAuthentication(String jwtToken) {
-		// VALIDAR EL TOKEN Y CAPTURAR EXCEPCIONES
-		DecodedJWT decodedJWT;
-
+	private Authentication getAuthentication(String jwtToken) throws AuthenticationException {
+		
 		try {
-			decodedJWT = this.jwtUtils.validateToken(jwtToken);
-		} catch (Exception e) {
-			return null;
-		}
-
-		// GENERAMOS Y RETORNAMOS EL Authentication
-		String username = this.jwtUtils.extractUsername(decodedJWT);
-		String stringAuthorities = this.jwtUtils.getEspecificClaim(decodedJWT, "authorities").asString();		
-		
-		Collection<? extends GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList(stringAuthorities);
-		
-		return new UsernamePasswordAuthenticationToken(username, null, authorities);
+			DecodedJWT decodedJWT = this.jwtUtils.validateToken(jwtToken);
+			
+			String username = this.jwtUtils.extractUsername(decodedJWT);
+			String stringAuthorities = this.jwtUtils.getEspecificClaim(decodedJWT, "authorities").asString();		
+			
+			Collection<? extends GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList(stringAuthorities);			
+			
+			return new UsernamePasswordAuthenticationToken(username, null, authorities);
+		} catch (JWTVerificationException ex) {
+	        throw new BadCredentialsException("Invalid token: " + ex.getMessage(), ex);
+	    } catch (Exception ex) {
+	        throw new AuthenticationServiceException("Authentication failed", ex);
+	    }		
 	}
 
 	private String extractToken(HttpServletRequest request) {
