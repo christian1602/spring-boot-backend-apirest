@@ -1,6 +1,9 @@
 package com.bolsadeideas.springboot.backend.apirest.service.implementation;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bolsadeideas.springboot.backend.apirest.exception.InvalidRefreshTokenException;
@@ -27,6 +31,7 @@ import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IRoleR
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IUserRepository;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.CreateUserDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.RefreshTokenDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.UpdatePasswordDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IAuthUserService;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthLoginDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthResponseDTO;
@@ -52,6 +57,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		UserEntity userEntityFound = this.userRepository.findUserEntityByUsername(username)
 				.orElseThrow(() -> new UsernameNotFoundException("Username: ".concat(username).concat(" not found")));
@@ -69,6 +75,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 	}
 
 	@Override
+	@Transactional
 	public AuthResponseDTO createUser(CreateUserDTO createUserDTO) {
 		// INICIO DE UN POSIBLE MAPPER PARA CONVERTIR UN CreateUserDTO A UN UserEntity
 		// PERO DEBIDO A SU COMPLEJIDAD Y VALIDACIONES ADICIONALES, SE REALIZA MANUALMENTE 
@@ -127,40 +134,8 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 		return new AuthResponseDTO(username, "User loged successfuly", accessToken, refreshToken, true);
 	}
 	
-	private Authentication authenticate(String username, String password) {
-		
-		UserDetails userDetails;
-		
-		try {
-			userDetails = this.loadUserByUsername(username);
-		} catch(UsernameNotFoundException ex){
-			throw new BadCredentialsException("Invalid username");
-		}		
-		
-		if (!passwordEncoder.matches(password, userDetails.getPassword())) {
-			throw new BadCredentialsException("Invalid password");
-		}
-
-		return new UsernamePasswordAuthenticationToken(username, userDetails.getPassword(),userDetails.getAuthorities());
-	}
-
-	private List<SimpleGrantedAuthority> convertRolesToSimpleGrantedAuthorityList(Set<RoleEntity> roles) {
-		List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
-
-		// EN SPRING SECURITY ES NECESARIO AGREGAR EL PREFIJO "ROLE_" PARA QUE UN ROL
-		// SEA RECONOCIDO COMO TAL
-		authorityList.addAll(roles.stream()
-				.map(role -> new SimpleGrantedAuthority("ROLE_".concat(role.getRoleEnum().name()))).toList());
-
-		// EN SPRING SECURITY NO ES NECESARIO AGREGAR NINGUN PREFIJO PARA QUE UN PERMISO
-		// SEA RECONOCIDO COMO TAL
-		authorityList.addAll(roles.stream().flatMap(role -> role.getPermissions().stream()
-				.map(permission -> new SimpleGrantedAuthority(permission.getName()))).toList());
-
-		return authorityList;
-	}
-
 	@Override
+	@Transactional(readOnly = true)
 	public AuthResponseDTO refreshToken(RefreshTokenDTO refreshToken) {
 		DecodedJWT decodedJWT;
 		
@@ -183,7 +158,19 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
         	userDetails = this.loadUserByUsername(username);	
         } catch(UsernameNotFoundException ex){
 			throw new BadCredentialsException("Invalid username");
-		}        
+		}
+        
+        UserEntity userEntity = this.userRepository.findUserEntityByUsername(username)
+				.orElseThrow(() -> new UsernameNotFoundException("Username: ".concat(username).concat(" not found")));
+        
+        // VERIFICAMOS SI EL TOKEN FUE EMITIDO ANTES DEL ULTIMO CAMBIO DE PASSWORD
+        LocalDateTime lastPasswordChange = userEntity.getLastPasswordChange();
+        Date tokenIssueDate = decodedJWT.getIssuedAt();
+        LocalDateTime tokenIssueDateLocalDateTime = this.convertDateToLocalDateTime(tokenIssueDate);
+        
+        if (lastPasswordChange.isAfter(tokenIssueDateLocalDateTime)) {
+        	throw new InvalidRefreshTokenException("Refresh token is no longer valid due to password change");
+        }
         
 		// GENERAMOS UN NUEVO ACCESS TOKEN
         Authentication authentication = new UsernamePasswordAuthenticationToken(username, userDetails.getPassword(),userDetails.getAuthorities());
@@ -191,6 +178,80 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
         String newAccessToken = this.jwtUtils.createToken(authentication);
         
 		return new AuthResponseDTO(username, "Token refreshed successfully", newAccessToken, refreshToken.refreshToken(), true);
+	}
+	
+
+	@Override
+	@Transactional
+	public AuthResponseDTO updatePassword(UpdatePasswordDTO updatePasswordDTO) {
+		String username = updatePasswordDTO.username();
+		String currentPassword = updatePasswordDTO.currentPassword();
+		String newPassword = updatePasswordDTO.newPassword();
+		
+		// CARGAR EL USUARIO
+		UserDetails userDetails;
+        
+        try {
+        	userDetails = this.loadUserByUsername(username);
+        } catch(UsernameNotFoundException ex){
+			throw new BadCredentialsException("Invalid username");
+		}
+        
+        // VERIFICAR EL PASSWORD ACTUAL
+        if (!this.passwordEncoder.matches(currentPassword, userDetails.getPassword())) {
+			throw new BadCredentialsException("Invalid password");
+		}
+        
+        // ACTUALIZAR EL PASSWORD
+        UserEntity userEntityFound = this.userRepository.findUserEntityByUsername(username)
+				.orElseThrow(() -> new UsernameNotFoundException("Username: ".concat(username).concat(" not found")));
+        
+        userEntityFound.setPassword(this.passwordEncoder.encode(newPassword));
+        userEntityFound.setLastPasswordChange(LocalDateTime.now()); // ACTUALIZA LA FECHA DE CAMBIO DE PASSWORD
+        this.userRepository.save(userEntityFound);
+        
+        return new AuthResponseDTO(username, "Password updated successfully", null, null, true);
+	}
+	
+	private Authentication authenticate(String username, String password) {
+		
+		UserDetails userDetails;
+		
+		try {
+			userDetails = this.loadUserByUsername(username);
+		} catch(UsernameNotFoundException ex){
+			throw new BadCredentialsException("Invalid username");
+		}		
+		
+		if (!this.passwordEncoder.matches(password, userDetails.getPassword())) {
+			throw new BadCredentialsException("Invalid password");
+		}
+
+		return new UsernamePasswordAuthenticationToken(username, userDetails.getPassword(),userDetails.getAuthorities());
+	}
+
+	private List<SimpleGrantedAuthority> convertRolesToSimpleGrantedAuthorityList(Set<RoleEntity> roles) {
+		List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
+
+		// EN SPRING SECURITY ES NECESARIO AGREGAR EL PREFIJO "ROLE_" PARA QUE UN ROL
+		// SEA RECONOCIDO COMO TAL
+		authorityList.addAll(roles.stream()
+				.map(role -> new SimpleGrantedAuthority("ROLE_".concat(role.getRoleEnum().name())))
+				.toList());
+
+		// EN SPRING SECURITY NO ES NECESARIO AGREGAR NINGUN PREFIJO PARA QUE UN PERMISO
+		// SEA RECONOCIDO COMO TAL
+		authorityList.addAll(roles.stream()
+				.flatMap(role -> role.getPermissions().stream()
+						.map(permission -> new SimpleGrantedAuthority(permission.getName())))
+				.toList());
+
+		return authorityList;
+	}
+	
+	// CONVERSION DE Date a LocalDateTime
+	private LocalDateTime convertDateToLocalDateTime(Date date) {
+	    return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 	}
 	
 	/*

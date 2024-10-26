@@ -1,5 +1,6 @@
 package com.bolsadeideas.springboot.backend.apirest.persistence.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -28,7 +29,7 @@ public class UserEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@Column(name = "email", unique = true, nullable = false)
 	private String email;
 
@@ -57,6 +58,9 @@ public class UserEntity {
 	@OneToMany(targetEntity = PostEntity.class, fetch = FetchType.LAZY, mappedBy = "user")
 	@JsonManagedReference
 	private List<PostEntity> posts = new ArrayList<>();
+
+	@Column(name = "last_password_change", nullable = true)
+	private LocalDateTime lastPasswordChange;
 
 	public UserEntity() {
 	}
@@ -141,11 +145,20 @@ public class UserEntity {
 		this.posts = posts;
 	}
 
+	public LocalDateTime getLastPasswordChange() {
+		return lastPasswordChange;
+	}
+
+	public void setLastPasswordChange(LocalDateTime lastPasswordChange) {
+		this.lastPasswordChange = lastPasswordChange;
+	}
+
 	@Override
 	public String toString() {
 		return "UserEntity [id=" + id + ", username=" + username + ", email=" + email + ", password=" + password
 				+ ", enabled=" + enabled + ", accountNoExpired=" + accountNoExpired + ", accountNoLocked="
-				+ accountNoLocked + ", credentialNoExpired=" + credentialNoExpired + "]";
+				+ accountNoLocked + ", credentialNoExpired=" + credentialNoExpired + ", lastPasswordChange="
+				+ lastPasswordChange + "]";
 	}
 
 	@Override

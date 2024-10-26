@@ -1,5 +1,7 @@
 package com.bolsadeideas.springboot.backend.apirest.presentation.dto;
 
+import java.time.LocalDateTime;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -14,5 +16,6 @@ public record UserDTO(
 		boolean accountNoExpired,
 		boolean accountNoLocked,
 		boolean credentialNoExpired,
+		LocalDateTime lastPasswordChange,
 		@Valid AuthRolesDTO authRolesDTO) {
 }

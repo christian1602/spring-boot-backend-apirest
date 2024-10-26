@@ -1,6 +1,6 @@
 package com.bolsadeideas.springboot.backend.apirest.persistence.entity;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import jakarta.persistence.Column;
@@ -10,8 +10,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 
 @Entity
 @Table(name = "clientes")
@@ -30,13 +28,16 @@ public class ClienteEntity {
 	@Column(name = "email", unique = true, nullable = false)
 	private String email;
 
+	// @Column(name = "created_at")
+	// @Temporal(TemporalType.DATE)
+	// private Date createdAt;
+	
 	@Column(name = "created_at")
-	@Temporal(TemporalType.DATE)
-	private Date createdAt;
+	private LocalDateTime createdAt;
 
 	@PrePersist
 	public void prePerist() {
-		this.createdAt = new Date();
+		this.createdAt = LocalDateTime.now();
 	}
 
 	public ClienteEntity() {
@@ -75,11 +76,11 @@ public class ClienteEntity {
 		this.email = email;
 	}
 
-	public Date getCreatedAt() {
+	public LocalDateTime getCreatedAt() {
 		return createdAt;
 	}
 
-	public void setCreatedAt(Date createdAt) {
+	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
 

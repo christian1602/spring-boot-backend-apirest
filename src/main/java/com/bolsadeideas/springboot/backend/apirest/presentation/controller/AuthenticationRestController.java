@@ -14,6 +14,7 @@ import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthLoginDTO
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthResponseDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.CreateUserDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.RefreshTokenDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.UpdatePasswordDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.implementation.UserDetailsServiceImpl;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -85,6 +86,16 @@ public class AuthenticationRestController {
 		}
     	
     	AuthResponseDTO authResponseDTO = this.userDetailsService.refreshToken(refreshToken);
+    	return new ResponseEntity<AuthResponseDTO>(authResponseDTO, HttpStatus.OK);
+    }
+    
+    @PostMapping("/update-password")
+    public ResponseEntity<?> updatePassword(@Valid @RequestBody UpdatePasswordDTO updatePasswordDTO, BindingResult result){
+    	if (result.hasErrors()) {
+			throw new InvalidDataException(result);
+		}
+    	
+    	AuthResponseDTO authResponseDTO = this.userDetailsService.updatePassword(updatePasswordDTO);    	
     	return new ResponseEntity<AuthResponseDTO>(authResponseDTO, HttpStatus.OK);
     }
 }
