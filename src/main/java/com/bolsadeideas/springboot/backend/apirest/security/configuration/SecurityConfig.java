@@ -50,7 +50,9 @@ public class SecurityConfig {
 					// PERMITIR ACCESO PUBLICO A SWAGGER
 		            auths.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
 					// ENDPOINTS PUBLICOS DE AUTENTICACION
-					auths.requestMatchers(HttpMethod.POST, "/auth/**").permitAll();
+					auths.requestMatchers(HttpMethod.POST, "/auth/sign-up").permitAll();
+					auths.requestMatchers(HttpMethod.POST, "/auth/log-in").permitAll();
+					auths.requestMatchers(HttpMethod.POST, "/auth/refresh-token").permitAll();
 
 					// ENDPOINTS PRIVADOS
 					// EJEMPLO DE DAR UN ROLE_USER QUE SOLO TIENE PERMISO DE READ
