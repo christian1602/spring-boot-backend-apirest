@@ -81,7 +81,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 		// PERO DEBIDO A SU COMPLEJIDAD Y VALIDACIONES ADICIONALES, SE REALIZA MANUALMENTE 
 		String email = createUserDTO.email();
 		String username = createUserDTO.username();
-		String password = createUserDTO.password();		
+		String password = createUserDTO.password();
 		List<String> roleRequest = createUserDTO.authRolesDTO().roleListName();
 
 		Set<RoleEntity> roleEntitySet = new HashSet<>(this.roleRepository.findRoleEntityByRoleEnumIn(roleRequest));
@@ -105,6 +105,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 		
 		List<SimpleGrantedAuthority> authorityList = this.convertRolesToSimpleGrantedAuthorityList(userEntityCreated.getRoles());
 
+		// CREAMOS UN Authentication TEMPORAL PARA CREAR TOKENS 
 		Authentication authentication = new UsernamePasswordAuthenticationToken(
 				userEntityCreated.getUsername(),
 				userEntityCreated.getPassword(),
@@ -124,10 +125,9 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 		Authentication authentication = this.authenticate(username, password);
 		// DEBIDO A QUE EN EL LOGIN TODAVIA NO EXISTE EL TOKEN,
 		// EL FILTRO DE TOKEN NO SE CONSIDERA Y CONTINUA CON EL SIGUIENTE FILTRO
-		// ENTONCES DEBEMOS USAR setAuthentication(authentication) PARA ESTABLECER LA
-		// NUEVA AUTENTICACION
+		// ENTONCES DEBEMOS USAR setAuthentication(authentication) PARA ESTABLECER LA NUEVA AUTENTICACION EN SPRING SECURITY
 		SecurityContextHolder.getContext().setAuthentication(authentication);
-
+		
 		String accessToken = this.jwtUtils.createToken(authentication);
 		String refreshToken = this.jwtUtils.createRefreshToken(authentication);
 		
@@ -137,49 +137,31 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 	@Override
 	@Transactional(readOnly = true)
 	public AuthResponseDTO refreshToken(RefreshTokenDTO refreshToken) {
-		DecodedJWT decodedJWT;
-		
-		try {
-			decodedJWT = this.jwtUtils.validateToken(refreshToken.refreshToken());
-		} catch(Exception e) {
-			throw new InvalidRefreshTokenException("Invalid refresh token");
-		}
+		DecodedJWT decodedJWT = this.getDecodedJWT(refreshToken.refreshToken());
 		
 		if (!this.jwtUtils.isRefreshToken(decodedJWT)) {
 			throw new InvalidTypeRefreshTokenException("Invalid type refresh token"); 
 		}
 		
-		 // CARGAMOS AL USUARIO DESDE EL TOKEN
+		// CARGAMOS AL USUARIO DESDE EL TOKEN
         String username = this.jwtUtils.extractUsername(decodedJWT);
-        
-        UserDetails userDetails;
-        
-        try {
-        	userDetails = this.loadUserByUsername(username);	
-        } catch(UsernameNotFoundException ex){
-			throw new BadCredentialsException("Invalid username");
-		}
-        
         UserEntity userEntity = this.userRepository.findUserEntityByUsername(username)
 				.orElseThrow(() -> new UsernameNotFoundException("Username: ".concat(username).concat(" not found")));
         
         // VERIFICAMOS SI EL TOKEN FUE EMITIDO ANTES DEL ULTIMO CAMBIO DE PASSWORD
-        LocalDateTime lastPasswordChange = userEntity.getLastPasswordChange();
-        Date tokenIssueDate = decodedJWT.getIssuedAt();
-        LocalDateTime tokenIssueDateLocalDateTime = this.convertDateToLocalDateTime(tokenIssueDate);
+        this.verifyIfTheTokenWasIssuedBeforeTheLastPasswordChange(userEntity,decodedJWT);
         
-        if (lastPasswordChange.isAfter(tokenIssueDateLocalDateTime)) {
-        	throw new InvalidRefreshTokenException("Refresh token is no longer valid due to password change");
-        }
-        
-		// GENERAMOS UN NUEVO ACCESS TOKEN
-        Authentication authentication = new UsernamePasswordAuthenticationToken(username, userDetails.getPassword(),userDetails.getAuthorities());
-        		
+        // GENERAMOS UN NUEVO ACCESS TOKEN
+        UserDetails userDetails = this.getUserDetails(username);
+        // CREAMOS UN Authentication TEMPORAL PARA CREAR UN TOKEN
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+        		username,
+        		userDetails.getPassword(),
+        		userDetails.getAuthorities());        		
         String newAccessToken = this.jwtUtils.createToken(authentication);
         
 		return new AuthResponseDTO(username, "Token refreshed successfully", newAccessToken, refreshToken.refreshToken(), true);
 	}
-	
 
 	@Override
 	@Transactional
@@ -188,24 +170,17 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 		String currentPassword = updatePasswordDTO.currentPassword();
 		String newPassword = updatePasswordDTO.newPassword();
 		
-		// CARGAR EL USUARIO
-		UserDetails userDetails;
-        
-        try {
-        	userDetails = this.loadUserByUsername(username);
-        } catch(UsernameNotFoundException ex){
-			throw new BadCredentialsException("Invalid username");
-		}
-        
+		UserDetails userDetails = this.getUserDetails(username);
+		
         // VERIFICAR EL PASSWORD ACTUAL
-        if (!this.passwordEncoder.matches(currentPassword, userDetails.getPassword())) {
+		if (!this.isPasswordValid(currentPassword, userDetails.getPassword())) {
 			throw new BadCredentialsException("Invalid password");
 		}
-        
-        // ACTUALIZAR EL PASSWORD
+                
         UserEntity userEntityFound = this.userRepository.findUserEntityByUsername(username)
 				.orElseThrow(() -> new UsernameNotFoundException("Username: ".concat(username).concat(" not found")));
         
+        // ACTUALIZAR EL PASSWORD
         userEntityFound.setPassword(this.passwordEncoder.encode(newPassword));
         userEntityFound.setLastPasswordChange(LocalDateTime.now()); // ACTUALIZA LA FECHA DE CAMBIO DE PASSWORD
         this.userRepository.save(userEntityFound);
@@ -214,20 +189,44 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 	}
 	
 	private Authentication authenticate(String username, String password) {
+		UserDetails userDetails = this.getUserDetails(username);
 		
+		if (!this.isPasswordValid(password, userDetails.getPassword())) {
+			throw new BadCredentialsException("Invalid password");
+		}
+
+		return new UsernamePasswordAuthenticationToken(
+				username, 
+				userDetails.getPassword(),
+				userDetails.getAuthorities());
+	}
+	
+	private UserDetails getUserDetails(String username) {
 		UserDetails userDetails;
 		
 		try {
 			userDetails = this.loadUserByUsername(username);
-		} catch(UsernameNotFoundException ex){
+		} catch (UsernameNotFoundException ex){
 			throw new BadCredentialsException("Invalid username");
-		}		
-		
-		if (!this.passwordEncoder.matches(password, userDetails.getPassword())) {
-			throw new BadCredentialsException("Invalid password");
 		}
-
-		return new UsernamePasswordAuthenticationToken(username, userDetails.getPassword(),userDetails.getAuthorities());
+		
+		return userDetails;
+	}
+	
+	private DecodedJWT getDecodedJWT(String refreshToken) {
+		DecodedJWT decodedJWT;
+		
+		try {
+			decodedJWT = this.jwtUtils.validateToken(refreshToken);
+		} catch(Exception e) {
+			throw new InvalidRefreshTokenException("Invalid refresh token");
+		}
+		
+		return decodedJWT;
+	}
+	
+	private boolean isPasswordValid(String rawPassword, String encodedPassword) {
+		return this.passwordEncoder.matches(rawPassword, encodedPassword);
 	}
 
 	private List<SimpleGrantedAuthority> convertRolesToSimpleGrantedAuthorityList(Set<RoleEntity> roles) {
@@ -248,6 +247,18 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 
 		return authorityList;
 	}
+	
+	private void verifyIfTheTokenWasIssuedBeforeTheLastPasswordChange(UserEntity userEntity, DecodedJWT decodedJWT)
+	{
+        LocalDateTime lastPasswordChange = userEntity.getLastPasswordChange();
+        Date tokenIssueDate = decodedJWT.getIssuedAt();
+        LocalDateTime tokenIssueDateLocalDateTime = this.convertDateToLocalDateTime(tokenIssueDate);
+        
+        if (lastPasswordChange.isAfter(tokenIssueDateLocalDateTime)) {
+        	throw new InvalidRefreshTokenException("Refresh token is no longer valid due to password change");
+        }
+	}
+	
 	
 	// CONVERSION DE Date a LocalDateTime
 	private LocalDateTime convertDateToLocalDateTime(Date date) {
