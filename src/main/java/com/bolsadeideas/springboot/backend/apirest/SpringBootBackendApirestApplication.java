@@ -47,7 +47,8 @@ public class SpringBootBackendApirestApplication {
 
 			RoleEntity userRole = new RoleEntity();
 			userRole.setRoleEnum(RoleEnum.USER);
-			userRole.setPermissions(Set.of(createPermission,readPermission));
+			userRole.setPermissions(Set.of(createPermission));
+			// userRole.setPermissions(Set.of(createPermission,readPermission));
 
 			RoleEntity guestRole = new RoleEntity();
 			guestRole.setRoleEnum(RoleEnum.GUEST);

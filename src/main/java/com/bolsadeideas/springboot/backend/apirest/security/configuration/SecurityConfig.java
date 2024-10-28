@@ -6,7 +6,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-// import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,7 +15,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import com.bolsadeideas.springboot.backend.apirest.security.exception.JwtAccessDeniedHandler;
 import com.bolsadeideas.springboot.backend.apirest.security.exception.JwtAuthenticationEntryPoint;
@@ -44,6 +43,10 @@ public class SecurityConfig {
 	SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 		return httpSecurity
 				.csrf(AbstractHttpConfigurer::disable)
+				// .formLogin(form -> form.disable())  // DESHABILITAR EL FORMULARIO DE INICIO DE SESION
+				// .httpBasic(basic -> basic.disable())  // DESHABILITAR LA AUTENTICACION BASCICA
+				// .logout(logout -> logout.disable())  // DESHABILITAR EL MANEJO DE LOGOUT
+				// .anonymous(anonymous -> anonymous.disable())  // DESHABILITAR EL ACCESO ANONIMO
 				// .httpBasic(Customizer.withDefaults()) NO USAMOS AUTENTICACION BASICA
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auths -> {
@@ -57,13 +60,13 @@ public class SecurityConfig {
 					// ENDPOINTS PRIVADOS
 					// EJEMPLO DE DAR UN ROLE_USER QUE SOLO TIENE PERMISO DE READ
 					// Y EN EL CONTROLADOR SOLO ENTRARA AL PERMISO READ MAS NO AL CREATE
-					auths.requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole("ADMIN","DEVELOPER");
-					auths.requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAnyRole("ADMIN","DEVELOPER");
+					// auths.requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole("ADMIN","DEVELOPER");
+					// auths.requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAnyRole("ADMIN","DEVELOPER");
 					
 					// Configurar acceso a usuarios con ROLE_USER
-	                // auths.requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("READ"); // Permite acceso solo a READ
-	                // auths.requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAuthority("CREATE"); // Permite acceso solo a CREATE
-	                // auths.requestMatchers(HttpMethod.DELETE, "/api/users/{id}").hasAuthority("DELETE"); // Permite acceso solo a DELETE
+	                auths.requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("READ"); // Permite acceso solo a READ
+	                auths.requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAuthority("CREATE"); // Permite acceso solo a CREATE
+	                auths.requestMatchers(HttpMethod.DELETE, "/api/users/{id}").hasAuthority("DELETE"); // Permite acceso solo a DELETE
 	                
 	                // Permitir acceso a READ, CREATE y DELETE para ROLE_ADMIN
 	                // auths.requestMatchers(HttpMethod.DELETE, "/api/users/{id}").hasRole("ADMIN"); // Solo acceso para ADMIN
@@ -77,14 +80,15 @@ public class SecurityConfig {
 					// CONFIGURACION POR DEFECTO (PARA LOS NO ESPECIFICADOS)
 					auths.anyRequest().authenticated(); // CREDENCIALES VALIDAS, ENTONCES LA RESPUESTA ES 200 (OK)
 					// auths.anyRequest().denyAll(); // LA RESPUESTA SIEMPRE SERA 403 (FORBIDDEN)
-				})				
+				})
 				// CONFIGURA EL AuthenticationEntryPoint Y EL AccessDeniedHandler CORRECTAMENTE
 				.exceptionHandling(exceptionHandling -> exceptionHandling
 						.authenticationEntryPoint(this.jwtAuthenticationEntryPoint) // PARA ERRORES 401
 						.accessDeniedHandler(this.jwtAccessDeniedHandler) // PARA ERRORES 403
 				)
-		        .addFilterBefore(new JwtTokenValidator(this.jwtUtils), UsernamePasswordAuthenticationFilter.class) // DEBIDO A QUE TENEMOS UN LOGIN		        
-				//addFilterBefore(new JwtTokenValidator(this.jwtUtils), BasicAuthenticationFilter.class) NO USAMOS AUTENTICACION BASICA
+		        // .addFilterBefore(new JwtTokenValidator(this.jwtUtils), UsernamePasswordAuthenticationFilter.class) // DEBIDO A QUE TENEMOS UN LOGIN		        
+				// .addFilterBefore(new JwtTokenValidator(this.jwtUtils), UsernamePasswordAuthenticationFilter.class) // NO USAMOS AUTENTICACION BASICA
+				.addFilterBefore(new JwtTokenValidator(this.jwtUtils), BasicAuthenticationFilter.class) // NO USAMOS AUTENTICACION BASICA				
 				.build();
 	}
 	// PASO 2: CONFIGURANDO AUTHENTICATION MANAGER

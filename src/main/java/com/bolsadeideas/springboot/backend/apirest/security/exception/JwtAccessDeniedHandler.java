@@ -19,7 +19,8 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 			HttpServletResponse response,
 			AccessDeniedException accessDeniedException
 	) throws IOException, ServletException {
-		// ENVIAR UN ERROR 403 CUANDO EL ACCESO ES DENEGADO				
+		// ENVIAR UN ERROR 403 CUANDO EL ACCESO ES DENEGADO
+		System.out.println("ACCESO DENEGADO: " + request.getRequestURI());
 		response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied: You do not have the necessary permissions");
 	}
 }

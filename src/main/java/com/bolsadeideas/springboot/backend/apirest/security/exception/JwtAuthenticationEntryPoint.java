@@ -20,6 +20,7 @@ public class JwtAuthenticationEntryPoint  implements AuthenticationEntryPoint {
 			AuthenticationException authException
 	) throws IOException, ServletException {
 		// ENVIAR UN ERROR 401 CUANDO NO SE ESTA AUTENTICADO
+		System.out.println("USUARIO NO AUTENTICADO: " + request.getRequestURI());
 		response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: Authentication token required");			
 	}
 }
