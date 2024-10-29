@@ -54,6 +54,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 		// EXTRAER EL TOKEN JWT DE LA CABECERA: Authorization
 		String accessToken = this.extractToken(request);
 
+		System.out.println("accessToken => " + accessToken);
 		// SI EL TOKEN ES NULO EN UN ENDPOINT QUE REQUIERE AUTENTICACION, ENVIAR ERROR 401
 		if (accessToken == null) {
 			System.out.println("EL accessToken ES NULL");

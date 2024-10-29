@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataException;
-import com.bolsadeideas.springboot.backend.apirest.persistence.entity.PostEntity;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.PostDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IPostApiService;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IPostCustomService;
@@ -45,9 +43,10 @@ public class PostRestController {
 		this.postCustomService = postCustomService;
 	}
 
+	/*
 	@GetMapping("/sync-posts")
 	public ResponseEntity<?> syncPosts() {
-		List<PostEntity> posts = this.postApiService.fetchPosts();
+		List<PostDTO> posts = this.postApiService.fetchPostsRestTemplate();
 
 		Map<String, Object> response = new HashMap<>();
 
@@ -67,6 +66,16 @@ public class PostRestController {
 		response.put("mensaje", "La sincronización de Posts fue realizada éxito!");
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+	}
+	*/
+	@GetMapping("/posts-resttemplate")
+	public List<PostDTO> listPostsRestTemplate() {
+		return this.postApiService.fetchPostsRestTemplate();
+	}
+	
+	@GetMapping("/posts-webclient")
+	public List<PostDTO> listPosts() {
+		return this.postApiService.fetchPostsWebClient();
 	}
 
 	@GetMapping("/posts")
