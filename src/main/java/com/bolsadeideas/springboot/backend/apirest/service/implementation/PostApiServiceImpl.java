@@ -20,15 +20,15 @@ import jakarta.annotation.PostConstruct;
 
 @Service
 public class PostApiServiceImpl implements IPostApiService {	
-	private final IPostRepository postDao;
+	private final IPostRepository postRepository;
 	private final RestTemplate restTemplate;
 	private WebClient webClient;
 	
 	@Value("${external.api.url.posts}")
 	private String postApiUrl;
 
-	public PostApiServiceImpl(IPostRepository postDao, RestTemplate restTemplate) {
-		this.postDao = postDao;
+	public PostApiServiceImpl(IPostRepository postRepository, RestTemplate restTemplate) {
+		this.postRepository = postRepository;
 		this.restTemplate = restTemplate;
 	}
 	
@@ -41,13 +41,14 @@ public class PostApiServiceImpl implements IPostApiService {
 	}
 	
 	@Override
-	public List<PostDTO> fetchPostsRestTemplate() {
-		PostDTO[] postArray = this.restTemplate.getForObject(this.postApiUrl.concat("/posts"), PostDTO[].class);
+	public List<PostDTO> apiFetchPostsRestTemplate() {
+		String url = this.postApiUrl.concat("/posts/");
+		PostDTO[] postArray = this.restTemplate.getForObject(url, PostDTO[].class);
 		return Arrays.asList(postArray);
 	}
 	
 	@Override
-	public List<PostDTO> fetchPostsWebClient() {
+	public List<PostDTO> apiFetchPostsWebClient() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		return this.webClient.get()
 				.uri("/posts")
@@ -56,6 +57,12 @@ public class PostApiServiceImpl implements IPostApiService {
 				.collectList()
 				.contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication))
 				.block();
+	}
+	
+	@Override
+	public PostDTO apiFindById(Long id) {
+		String url = this.postApiUrl.concat("/posts/").concat(id.toString());
+		return this.restTemplate.getForObject(url,PostDTO.class);		
 	}
 	
 	@Override

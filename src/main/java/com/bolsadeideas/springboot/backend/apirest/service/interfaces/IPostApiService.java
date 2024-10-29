@@ -6,7 +6,8 @@ import com.bolsadeideas.springboot.backend.apirest.presentation.dto.PostDTO;
 
 public interface IPostApiService {
 		
-	List<PostDTO> fetchPostsRestTemplate();
-	List<PostDTO> fetchPostsWebClient();
+	List<PostDTO> apiFetchPostsRestTemplate();
+	List<PostDTO> apiFetchPostsWebClient();
+	PostDTO apiFindById(Long id);
 	void saveAll(List<PostDTO> posts);
 }

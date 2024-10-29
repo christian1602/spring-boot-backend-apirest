@@ -47,17 +47,13 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 			System.out.println("ESTAMOS EN UN ENDPOINT QUE NO REQUIERE JWT");
 			filterChain.doFilter(request,response);
 			return; // SALIR DEL FILTRO
-		}
-		
-		System.out.println("ENTRANDO AL CODIGO QUE VALIDA SOLO ENDPOINTS QUE SI REQUIREN JWT");
+		}		
 		
 		// EXTRAER EL TOKEN JWT DE LA CABECERA: Authorization
 		String accessToken = this.extractToken(request);
-
-		System.out.println("accessToken => " + accessToken);
+		
 		// SI EL TOKEN ES NULO EN UN ENDPOINT QUE REQUIERE AUTENTICACION, ENVIAR ERROR 401
-		if (accessToken == null) {
-			System.out.println("EL accessToken ES NULL");
+		if (accessToken == null) {			
 			filterChain.doFilter(request, response);
 			// response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access token is missing");
 			return; // DETENER EL FLUJO
@@ -72,9 +68,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 		    // response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token, not Authorized at doFilterInternal");
 		    return; // SALIR DEL FILTRO SI EL TOKEN NO ES VALIDO
 		}
-
-		System.out.println("TODO SALIO BIEN Y ESTABLECEMOS EL SecurityContextHolder");
-		System.out.println("Permisos del usuario: " + authentication.getAuthorities());
+		
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 
 		// CONTINUAR CON EL SIGUIENTE FILTRO
@@ -111,8 +105,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 
 		// GENERAMOS Y RETORNAMOS EL Authentication
 		String username = this.jwtUtils.extractUsername(decodedJWT);
-		String stringAuthorities = this.jwtUtils.getEspecificClaim(decodedJWT,"authorities").asString();
-		System.out.println("Autoridades extraídas: " + stringAuthorities);
+		String stringAuthorities = this.jwtUtils.getEspecificClaim(decodedJWT,"authorities").asString();		
 		Collection<? extends GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList(stringAuthorities);
 
 		return new UsernamePasswordAuthenticationToken(username,null,authorities);

@@ -25,11 +25,12 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bolsadeideas.springboot.backend.apirest.exception.InvalidRefreshTokenException;
 import com.bolsadeideas.springboot.backend.apirest.exception.InvalidTypeRefreshTokenException;
 import com.bolsadeideas.springboot.backend.apirest.exception.RolesSpecifiedNotExist;
+import com.bolsadeideas.springboot.backend.apirest.exception.UserNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.RoleEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.UserEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IRoleRepository;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IUserRepository;
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.CreateUserDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.UserWriteDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.RefreshTokenDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.UpdatePasswordDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IAuthUserService;
@@ -76,17 +77,17 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 
 	@Override
 	@Transactional
-	public AuthResponseDTO createUser(CreateUserDTO createUserDTO) {
+	public AuthResponseDTO createUser(UserWriteDTO userWriteDTO) {
 		// INICIO DE UN POSIBLE MAPPER PARA CONVERTIR UN CreateUserDTO A UN UserEntity
 		// PERO DEBIDO A SU COMPLEJIDAD Y VALIDACIONES ADICIONALES, SE REALIZA MANUALMENTE 
-		String email = createUserDTO.email();
-		String username = createUserDTO.username();
-		String password = createUserDTO.password();
-		List<String> roleRequest = createUserDTO.authRolesDTO().roleListName();
+		String email = userWriteDTO.email();
+		String username = userWriteDTO.username();
+		String password = userWriteDTO.password();
+		List<String> roleRequest = userWriteDTO.authRolesDTO().roleListName();
 
-		Set<RoleEntity> roleEntitySet = new HashSet<>(this.roleRepository.findRoleEntityByRoleEnumIn(roleRequest));
+		Set<RoleEntity> newRolesEntitySet = new HashSet<>(this.roleRepository.findRoleEntityByRoleEnumIn(roleRequest));
 
-		if (roleEntitySet.isEmpty()) {
+		if (newRolesEntitySet.isEmpty()) {
 			throw new RolesSpecifiedNotExist("Roles specified does not exist to username: ".concat(username));
 		}
 		
@@ -98,23 +99,65 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 		userEntity.setAccountNoLocked(true);
 		userEntity.setAccountNoExpired(true);
 		userEntity.setCredentialNoExpired(true);
-		userEntity.setRoles(roleEntitySet);
+		userEntity.setRoles(newRolesEntitySet);
 		// FIN DE UN POSIBLE MAPPER PARA CONVERTIR N CreateUserDTO A UN UserEntity
 
-		UserEntity userEntityCreated = this.userRepository.save(userEntity);
+		UserEntity createdUserEntity = this.userRepository.save(userEntity);
 		
-		List<SimpleGrantedAuthority> authorityList = this.convertRolesToSimpleGrantedAuthorityList(userEntityCreated.getRoles());
+		List<SimpleGrantedAuthority> authorityList = this.convertRolesToSimpleGrantedAuthorityList(createdUserEntity.getRoles());
 
-		// CREAMOS UN Authentication TEMPORAL PARA CREAR TOKENS 
+		// CREAMOS UN Authentication TEMPORAL PARA CREAR TOKENS
 		Authentication authentication = new UsernamePasswordAuthenticationToken(
-				userEntityCreated.getUsername(),
-				userEntityCreated.getPassword(),
+				createdUserEntity.getUsername(),
+				createdUserEntity.getPassword(),
 				authorityList);
 
 		String accessToken = this.jwtUtils.createToken(authentication);
 		String refreshToken = this.jwtUtils.createRefreshToken(authentication);
 		
-		return new AuthResponseDTO(userEntityCreated.getUsername(), "User created successfuly", accessToken, refreshToken, true);
+		return new AuthResponseDTO(createdUserEntity.getUsername(), "User created successfuly", accessToken, refreshToken, true);
+	}
+	
+	@Override
+	@Transactional
+	public AuthResponseDTO updateUser(Long id, UserWriteDTO userWriteDTO) {
+		 // BUSCAR EL USUARIO EXISTENTE EN LA BASE DE DATOS
+		UserEntity existingUser = this.userRepository.findById(id)
+				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(id.toString())));
+
+		// ACTUALIZAR LOS CAMPOS SEGUN EL DTO RECIBIDO
+		existingUser.setEmail(userWriteDTO.email());
+	    existingUser.setUsername(userWriteDTO.username());
+	    existingUser.setPassword(this.passwordEncoder.encode(userWriteDTO.password()));
+	    
+	    // OBTENER LOS NUEVOS REOLES DESDE EL DTO
+	    List<String> roleRequest = userWriteDTO.authRolesDTO().roleListName();
+	    Set<RoleEntity> newRolesEntitySet = new HashSet<>(this.roleRepository.findRoleEntityByRoleEnumIn(roleRequest));
+	    
+	    if (newRolesEntitySet.isEmpty()) {
+	        throw new RolesSpecifiedNotExist("Roles specified does not exist for username: " + existingUser.getUsername());
+	    }
+	    
+	    // DEBIDO A cascade = CascadeType.MERGE REALIZAMOS LAS SIGUIENTES VALIDACIONES
+	    // MANEJO DE ROLES: ELIMINAR ROLES QUE NO ESTEN EN newRolesEntitySet
+	    existingUser.getRoles().removeIf(role -> !newRolesEntitySet.contains(role)); // ELIMINAR ROLES NO DESEADOS
+	    existingUser.getRoles().addAll(newRolesEntitySet); // AGREGAR NUEVOS ROLES QUE NO SE DUPLICARAN DEBIDO AL SET
+	    
+	    // GUARDAR EL USUARIO ACTUALIZADO
+	    UserEntity updatedUserEntity = this.userRepository.save(existingUser);
+	    
+	    List<SimpleGrantedAuthority> authorityList = this.convertRolesToSimpleGrantedAuthorityList(updatedUserEntity.getRoles());
+	    
+	    // CREAMOS UN Authentication TEMPORAL PARA CREAR TOKENS 
+	    Authentication authentication = new UsernamePasswordAuthenticationToken(
+	    		updatedUserEntity.getUsername(),
+	    		updatedUserEntity.getPassword(),
+	            authorityList);
+	    
+	    String accessToken = this.jwtUtils.createToken(authentication);
+	    String refreshToken = this.jwtUtils.createRefreshToken(authentication);
+	    
+	    return new AuthResponseDTO(updatedUserEntity.getUsername(), "User updated successfully", accessToken, refreshToken, true);
 	}
 	
 	@Override
@@ -259,11 +302,11 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
         }
 	}
 	
-	
 	// CONVERSION DE Date a LocalDateTime
 	private LocalDateTime convertDateToLocalDateTime(Date date) {
 	    return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 	}
+
 	
 	/*
 	private List<SimpleGrantedAuthority> convertRolesToSimpleGrantedAuthorityList_V2(Set<RoleEntity> roles) {

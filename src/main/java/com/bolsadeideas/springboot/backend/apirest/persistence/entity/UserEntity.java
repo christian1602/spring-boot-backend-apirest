@@ -51,11 +51,20 @@ public class UserEntity {
 	@Column(name = "credential_no_expired")
 	private boolean credentialNoExpired; // REQUERIDO POR SPRING SECURITY
 
-	@ManyToMany(targetEntity = RoleEntity.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	@JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+	@ManyToMany(
+			targetEntity = RoleEntity.class, 
+			fetch = FetchType.LAZY, 
+			cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+	@JoinTable(
+			name = "user_role", 
+			joinColumns = @JoinColumn(name = "user_id"), 
+			inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Set<RoleEntity> roles = new HashSet<>();
 
-	@OneToMany(targetEntity = PostEntity.class, fetch = FetchType.LAZY, mappedBy = "user")
+	@OneToMany(
+			targetEntity = PostEntity.class, 
+			fetch = FetchType.LAZY,
+			mappedBy = "user")
 	@JsonManagedReference
 	private List<PostEntity> posts = new ArrayList<>();
 

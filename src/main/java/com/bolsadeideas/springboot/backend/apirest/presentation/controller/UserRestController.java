@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.UserDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.UserReadDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IUserService;
 
 @RestController
@@ -29,18 +29,19 @@ public class UserRestController {
 	
 	@GetMapping("/users")
 	// @PreAuthorize("hasAuthority('READ')")
-	public List<UserDTO> index() {
+	public List<UserReadDTO> index() {
 		return this.userService.findAll();
 	}
 
 	@GetMapping("/users/{id}")
 	// @PreAuthorize("hasAuthority('CREATE')")
 	public ResponseEntity<?> show(@PathVariable Long id) {
-		UserDTO userDTO = this.userService.findById(id);
-		return new ResponseEntity<UserDTO>(userDTO, HttpStatus.OK);
+		UserReadDTO userReadDTO = this.userService.findById(id);
+		return new ResponseEntity<UserReadDTO>(userReadDTO, HttpStatus.OK);
 	}
 
 	/*
+	 *  METODO LLEVADO A AuthenticationRestControler COMO register
 	@PostMapping("/users")
 	public ResponseEntity<?> create(@Valid @RequestBody CreateUserDTO userDTO, BindingResult result) {
 		if (result.hasErrors()) {
@@ -55,7 +56,10 @@ public class UserRestController {
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
+	*/
 	
+	/*
+	 * METODO LLEVADO A AuthenticationRestControler	COMO update
 	@PutMapping("/users/{id}")
 	public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody CreateUserDTO userDTO, BindingResult result) {
 		if (result.hasErrors()) {

@@ -18,7 +18,7 @@ public class PostCustomDaoImpl implements IPostCustomDao {
 
 	@Override
 	public List<PostDTO> findAllPostsWithUserId() {
-		String jpql = "SELECT new com.bolsadeideas.springboot.backend.apirest.dto.PostDto(p.id, p.title, p.body, u.id) FROM Post p JOIN p.user u";
+		String jpql = "SELECT new com.bolsadeideas.springboot.backend.apirest.dto.PostDTO(p.id, p.title, p.body, u.id) FROM Post p JOIN p.user u";
 		TypedQuery<PostDTO> query = this.entityManager.createQuery(jpql, PostDTO.class);
 		return query.getResultList();
 	}

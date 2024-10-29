@@ -68,24 +68,37 @@ public class PostRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 	*/
-	@GetMapping("/posts-resttemplate")
-	public List<PostDTO> listPostsRestTemplate() {
-		return this.postApiService.fetchPostsRestTemplate();
-	}
 	
-	@GetMapping("/posts-webclient")
-	public List<PostDTO> listPosts() {
-		return this.postApiService.fetchPostsWebClient();
-	}
-
-	@GetMapping("/posts")
-	public List<PostDTO> index() {
-		return this.postService.findAll();
-	}
-
+	// USANDO LA INTERFACE IPostCustomService
+	
 	@GetMapping("/posts-with-userid")
 	public List<PostDTO> findAllPostsWithUserId() {
 		return this.postCustomService.getAllPostsWithUserId();
+	}
+	
+	// USANDO LA INTERFACE IPostApiService
+	
+	@GetMapping("/posts-api-resttemplate")
+	public List<PostDTO> listPostsRestTemplate() {
+		return this.postApiService.apiFetchPostsRestTemplate();
+	}
+	
+	@GetMapping("/posts-api-webclient")
+	public List<PostDTO> listPosts() {
+		return this.postApiService.apiFetchPostsWebClient();
+	}
+	
+	@GetMapping("/posts-api/{id}")
+	public ResponseEntity<?> showApi(@PathVariable Long id) {
+		PostDTO postDTO = this.postApiService.apiFindById(id);
+		return new ResponseEntity<PostDTO>(postDTO, HttpStatus.OK);
+	}
+
+	// USANDO LA INTERFACE IPostService
+	
+	@GetMapping("/posts")
+	public List<PostDTO> index() {
+		return this.postService.findAll();
 	}
 
 	@GetMapping("/posts/{id}")

@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataException;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthLoginDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthResponseDTO;
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.CreateUserDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.UserWriteDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.RefreshTokenDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.UpdatePasswordDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.implementation.UserDetailsServiceImpl;
@@ -37,13 +38,23 @@ public class AuthenticationRestController {
     }
     
     @PostMapping("/sign-up")
-    public ResponseEntity<?> register(@Valid @RequestBody CreateUserDTO createUserDTO, BindingResult result){
+    public ResponseEntity<?> register(@Valid @RequestBody UserWriteDTO userWriteDTO, BindingResult result){
     	if (result.hasErrors()) {
 			throw new InvalidDataException(result);
 		}
     	
-    	AuthResponseDTO authResponseDTO = this.userDetailsService.createUser(createUserDTO);
+    	AuthResponseDTO authResponseDTO = this.userDetailsService.createUser(userWriteDTO);
     	return new ResponseEntity<AuthResponseDTO>(authResponseDTO, HttpStatus.CREATED);
+    }
+    
+    @PostMapping("/update/{id}")
+    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody UserWriteDTO userWriteDTO, BindingResult result){
+    	if (result.hasErrors()) {
+			throw new InvalidDataException(result);
+		}
+    	
+    	AuthResponseDTO authResponseDTO = this.userDetailsService.updateUser(id, userWriteDTO);
+    	return new ResponseEntity<AuthResponseDTO>(authResponseDTO, HttpStatus.OK);
     }
     
     @PostMapping("/log-in")

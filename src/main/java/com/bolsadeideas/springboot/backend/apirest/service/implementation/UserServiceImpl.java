@@ -8,38 +8,38 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.bolsadeideas.springboot.backend.apirest.exception.UserNotFoundException;
-import com.bolsadeideas.springboot.backend.apirest.mappers.UserMapper;
+import com.bolsadeideas.springboot.backend.apirest.mappers.UserReadMapper;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.UserEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IUserRepository;
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.UserDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.UserReadDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IUserService;
 
 @Service
 public class UserServiceImpl implements IUserService {
 
 	private final IUserRepository userRepository;
-	private final UserMapper userMapper;
+	private final UserReadMapper userReadMapper;
 
-	public UserServiceImpl(IUserRepository userRepository, UserMapper userMapper) {
+	public UserServiceImpl(IUserRepository userRepository, UserReadMapper userReadMapper) {
 		this.userRepository = userRepository;
-		this.userMapper = userMapper;
+		this.userReadMapper = userReadMapper;
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<UserDTO> findAll() {
+	public List<UserReadDTO> findAll() {
 		Iterable<UserEntity> users = this.userRepository.findAll();
 		return StreamSupport.stream(users.spliterator(), false)
-				.map(this.userMapper::userEntityToUserDTO)
+				.map(this.userReadMapper::toUserReadDTO)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public UserDTO findById(Long id) {
+	public UserReadDTO findById(Long id) {
 		UserEntity userEntity = this.userRepository.findById(id)
 				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(id.toString())));		
-		return this.userMapper.userEntityToUserDTO(userEntity);
+		return this.userReadMapper.toUserReadDTO(userEntity);
 	}
 	/*
 	@Override
@@ -49,9 +49,9 @@ public class UserServiceImpl implements IUserService {
 		UserEntity userEntitySaved = this.userRepository.save(userEntity);
 		return this.userMapper.userEntityToUserDTO(userEntitySaved);
 	}
-	*/
+	
 	@Override
-	public UserDTO update(Long id, UserDTO userDTO) {
+	public UserEntity update(Long id, UserEntity userDTO) {
 		UserEntity userEntity = this.userRepository.findById(id)
 				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(id.toString())));
 		
@@ -60,9 +60,9 @@ public class UserServiceImpl implements IUserService {
 		
 		UserEntity updatedUserEntity = this.userRepository.save(userEntity);
 		
-		return this.userMapper.userEntityToUserDTO(updatedUserEntity);
+		return this.userWriterMapper.toUserEntity(updatedUserEntity);
 	}
-
+	 */
 	@Override
 	@Transactional
 	public void delete(Long id) {
