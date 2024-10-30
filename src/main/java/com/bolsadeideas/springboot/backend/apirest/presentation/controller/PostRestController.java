@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataException;
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.PostDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.PostReadDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.PostReadWithUserIdDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.PostWriteDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IPostApiService;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IPostCustomService;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IPostService;
@@ -72,67 +74,67 @@ public class PostRestController {
 	// USANDO LA INTERFACE IPostCustomService
 	
 	@GetMapping("/posts-with-userid")
-	public List<PostDTO> findAllPostsWithUserId() {
+	public List<PostReadWithUserIdDTO> findAllPostsWithUserId() {
 		return this.postCustomService.getAllPostsWithUserId();
 	}
 	
 	// USANDO LA INTERFACE IPostApiService
 	
 	@GetMapping("/posts-api-resttemplate")
-	public List<PostDTO> listPostsRestTemplate() {
+	public List<PostReadWithUserIdDTO> listPostsRestTemplate() {
 		return this.postApiService.apiFetchPostsRestTemplate();
 	}
 	
 	@GetMapping("/posts-api-webclient")
-	public List<PostDTO> listPosts() {
+	public List<PostReadWithUserIdDTO> listPosts() {
 		return this.postApiService.apiFetchPostsWebClient();
 	}
 	
 	@GetMapping("/posts-api/{id}")
 	public ResponseEntity<?> showApi(@PathVariable Long id) {
-		PostDTO postDTO = this.postApiService.apiFindById(id);
-		return new ResponseEntity<PostDTO>(postDTO, HttpStatus.OK);
+		PostReadWithUserIdDTO postReadWithUserIdDTO = this.postApiService.apiFindById(id);
+		return new ResponseEntity<PostReadWithUserIdDTO>(postReadWithUserIdDTO, HttpStatus.OK);
 	}
 
 	// USANDO LA INTERFACE IPostService
 	
 	@GetMapping("/posts")
-	public List<PostDTO> index() {
+	public List<PostReadDTO> index() {
 		return this.postService.findAll();
 	}
 
 	@GetMapping("/posts/{id}")
 	public ResponseEntity<?> show(@PathVariable Long id) {
-		PostDTO postDTO = this.postService.findById(id);
-		return new ResponseEntity<PostDTO>(postDTO, HttpStatus.OK);
+		PostReadDTO postReadDTO = this.postService.findById(id);
+		return new ResponseEntity<PostReadDTO>(postReadDTO, HttpStatus.OK);
 	}
 
 	@PostMapping("/posts")
-	public ResponseEntity<?> create(@Valid @RequestBody PostDTO postDTO, BindingResult result) {
+	public ResponseEntity<?> create(@Valid @RequestBody PostWriteDTO postWriteDTO, BindingResult result) {
 		if (result.hasErrors()) {
 			throw new InvalidDataException(result);
 		}
  
-		PostDTO nuevoPostDTO = this.postService.save(postDTO);
+		PostReadDTO nuevoPostReadDTO = this.postService.save(postWriteDTO);
 
 		Map<String, Object> response = new HashMap<>();
 		response.put("mensaje", "¡El Post ha sido creado con éxito!");
-		response.put("post", nuevoPostDTO);
+		response.put("post", nuevoPostReadDTO);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/posts/{id}")
-	public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody PostDTO postDTO, BindingResult result) {
+	public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody PostWriteDTO postWriteDTO, BindingResult result) {
 		if (result.hasErrors()) {
 			throw new InvalidDataException(result);
 		}
 		
-		PostDTO updatedPostDTO = this.postService.update(id, postDTO);
+		PostReadDTO updatedPostReadDTO = this.postService.update(id, postWriteDTO);
 
 		Map<String, Object> response = new HashMap<>();
 		response.put("mensaje", "¡El Post ha sido actualizado con éxito!");
-		response.put("post", updatedPostDTO);
+		response.put("post", updatedPostReadDTO);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}

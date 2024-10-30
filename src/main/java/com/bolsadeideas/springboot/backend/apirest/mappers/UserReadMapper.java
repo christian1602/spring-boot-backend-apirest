@@ -22,6 +22,8 @@ public interface UserReadMapper {
 	@Mapping(source = "roles", target = "authRolesDTO", qualifiedByName = "mapRolesToAuthRoleDTO")
 	UserReadDTO toUserReadDTO(UserEntity userEntity);
 	
+	// PARA EFECTOS PRACTICOS SE REALIZA LA CONVERSION DIRECTAMENTE
+	// PERO LO IDEAL SERIA ESTABLECER LOS ROLES EN EL SERVICIO, CON SU RESPECTIVA VALIDACION
 	@Named("mapRolesToAuthRoleDTO")
 	default AuthRolesDTO mapRolesToAuthRoleDTO(Set<RoleEntity> roles) {
 		List<String> roleNames = roles.stream()

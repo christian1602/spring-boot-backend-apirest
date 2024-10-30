@@ -10,12 +10,14 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bolsadeideas.springboot.backend.apirest.exception.PostNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.exception.UserNotCreatorException;
 import com.bolsadeideas.springboot.backend.apirest.exception.UserNotFoundException;
-import com.bolsadeideas.springboot.backend.apirest.mappers.PostMapper;
+import com.bolsadeideas.springboot.backend.apirest.mappers.PostReadMapper;
+import com.bolsadeideas.springboot.backend.apirest.mappers.PostWriteMapper;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.PostEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.UserEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IPostRepository;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IUserRepository;
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.PostDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.PostReadDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.PostWriteDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IPostService;
 
 @Service
@@ -23,64 +25,70 @@ public class PostServiceImpl implements IPostService {
 
 	private final IPostRepository postRepository;
 	private final IUserRepository userRepository;
-	private final PostMapper postMapper;
+	private final PostReadMapper postReadMapper;
+	private final PostWriteMapper postWriteMapper;
 
-	public PostServiceImpl(IPostRepository postRepository, IUserRepository userRepository, PostMapper postMapper) {
+	public PostServiceImpl(
+			IPostRepository postRepository, 
+			IUserRepository userRepository, 
+			PostReadMapper postReadMapper,
+			PostWriteMapper postWriteMapper) {
 		this.postRepository = postRepository;
 		this.userRepository = userRepository;
-		this.postMapper = postMapper;
+		this.postReadMapper = postReadMapper;
+		this.postWriteMapper = postWriteMapper;
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<PostDTO> findAll() {
+	public List<PostReadDTO> findAll() {
 		Iterable<PostEntity> posts =  this.postRepository.findAll();		
 		return StreamSupport.stream(posts.spliterator(), false)
-				.map(this.postMapper::postEntityToPostDTO)
+				.map(this.postReadMapper::toPostReadDTO)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public PostDTO findById(Long id) {
+	public PostReadDTO findById(Long id) {
 		PostEntity postEntity = this.postRepository.findById(id)
 				.orElseThrow(() -> new PostNotFoundException("Post not found with ID: ".concat(id.toString())));
-		return this.postMapper.postEntityToPostDTO(postEntity);
+		return this.postReadMapper.toPostReadDTO(postEntity);
 	}
 
 	@Override
 	@Transactional
-	public PostDTO save(PostDTO postDTO) {
-		UserEntity userEntitY = this.userRepository.findById(postDTO.userId())
-				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(postDTO.userId().toString())));
+	public PostReadDTO save(PostWriteDTO postWriteDTO) {
+		UserEntity userEntitY = this.userRepository.findById(postWriteDTO.userId())
+				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(postWriteDTO.userId().toString())));
 		
-		PostEntity postEntity = this.postMapper.postDTOToPostEntity(postDTO);
+		PostEntity postEntity = this.postWriteMapper.toPostEntity(postWriteDTO);
 		postEntity.setUser(userEntitY);
-		PostEntity postEntitySaved = this.postRepository.save(postEntity);
+		PostEntity savedPostEntity = this.postRepository.save(postEntity);
 		
-		return this.postMapper.postEntityToPostDTO(postEntitySaved);
+		return this.postReadMapper.toPostReadDTO(savedPostEntity);
 	}
 	
 	@Override
 	@Transactional
-	public PostDTO update(Long id, PostDTO postDTO) {
+	public PostReadDTO update(Long id, PostWriteDTO postWriteDTO) {
 		PostEntity existingPostEntity = this.postRepository.findById(id)
 				.orElseThrow(() -> new PostNotFoundException("Post not found with ID: ".concat(id.toString())));
 		
-	    if (!existingPostEntity.getUser().getId().equals(postDTO.userId())) {
-	        throw new UserNotCreatorException("User with ID: ".concat(postDTO.userId().toString()).concat(" is not the creator of the Post"));
+	    if (!existingPostEntity.getUser().getId().equals(postWriteDTO.userId())) {
+	        throw new UserNotCreatorException("User with ID: ".concat(postWriteDTO.userId().toString()).concat(" is not the creator of the Post"));
 	    }
 	    
-	    UserEntity userEntity = this.userRepository.findById(postDTO.userId())
-				.orElseThrow(()-> new UserNotFoundException("User not found with ID: ".concat(postDTO.userId().toString())));
+	    UserEntity userEntity = this.userRepository.findById(postWriteDTO.userId())
+				.orElseThrow(()-> new UserNotFoundException("User not found with ID: ".concat(postWriteDTO.userId().toString())));
 		
-		existingPostEntity.setTitle(postDTO.title());
-		existingPostEntity.setBody(postDTO.body());		
+		existingPostEntity.setTitle(postWriteDTO.title());
+		existingPostEntity.setBody(postWriteDTO.body());		
 		existingPostEntity.setUser(userEntity);
 		
 		PostEntity updatedPostEntity = this.postRepository.save(existingPostEntity);
 		
-		return this.postMapper.postEntityToPostDTO(updatedPostEntity);
+		return this.postReadMapper.toPostReadDTO(updatedPostEntity);
 	}	
 
 	@Override

@@ -5,16 +5,14 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.PostEntity;
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.PostDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.PostWriteDTO;
 
 @Mapper(componentModel = "spring")
-public interface PostMapper {
+public interface PostWriteMapper {
 	
-	PostMapper INSTANCE = Mappers.getMapper(PostMapper.class);
+	PostWriteMapper INSTANCE = Mappers.getMapper(PostWriteMapper.class);
 	
-	@Mapping(source = "user.id", target = "userId")
-	PostDTO postEntityToPostDTO(PostEntity postEntity);
-		
+	@Mapping(target = "id", ignore = true)
 	@Mapping(target = "user", ignore = true)
-	PostEntity postDTOToPostEntity(PostDTO postDTO);
+	PostEntity toPostEntity(PostWriteDTO postWriteDTO);	
 }

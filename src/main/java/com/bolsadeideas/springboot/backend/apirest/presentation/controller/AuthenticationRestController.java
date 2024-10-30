@@ -91,12 +91,12 @@ public class AuthenticationRestController {
     }
     
     @PostMapping("/refresh-token")
-    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenDTO refreshToken, BindingResult result){
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenDTO refreshTokenDTO, BindingResult result){
     	if (result.hasErrors()) {
 			throw new InvalidDataException(result);
 		}
     	
-    	AuthResponseDTO authResponseDTO = this.userDetailsService.refreshToken(refreshToken);
+    	AuthResponseDTO authResponseDTO = this.userDetailsService.refreshToken(refreshTokenDTO);
     	return new ResponseEntity<AuthResponseDTO>(authResponseDTO, HttpStatus.OK);
     }
     
