@@ -18,7 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataException;
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductReadDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductWriteDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IProductService;
 
 import jakarta.validation.Valid;
@@ -35,42 +36,42 @@ public class ProductRestController {
 	}
 
 	@GetMapping("/products")
-	public List<ProductDTO> index() {
+	public List<ProductReadDTO> index() {
 		return this.productService.findAll();
 	}
 
 	@GetMapping("/products/{id}")
 	public ResponseEntity<?> show(@PathVariable Long id) {
-		ProductDTO productDTO = this.productService.findById(id);
-		return new ResponseEntity<ProductDTO>(productDTO, HttpStatus.OK);
+		ProductReadDTO productReadDTO = this.productService.findById(id);
+		return new ResponseEntity<ProductReadDTO>(productReadDTO, HttpStatus.OK);
 	}
 
 	@PostMapping("/products")
-	public ResponseEntity<?> create(@Valid @RequestBody ProductDTO productDTO, BindingResult result) {
+	public ResponseEntity<?> create(@Valid @RequestBody ProductWriteDTO productWriteDTO, BindingResult result) {
 		if (result.hasErrors()) {
 			throw new InvalidDataException(result);
 		}
 		
-		ProductDTO nuevoProductoDTO = this.productService.save(productDTO);		
+		ProductReadDTO newProductoReadDTO = this.productService.save(productWriteDTO);		
 
 		Map<String, Object> response = new HashMap<>();
 		response.put("mensaje", "¡El producto ha sido creado con éxito!");
-		response.put("producto", nuevoProductoDTO);
+		response.put("producto", newProductoReadDTO);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/products/{id}")
-	public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody ProductDTO productDTO, BindingResult result) {
+	public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody ProductWriteDTO productWriteDTO, BindingResult result) {
 		if (result.hasErrors()) {
 			throw new InvalidDataException(result);
 		}
 		
-		ProductDTO updatedProductDTO = this.productService.update(id,productDTO);		
+		ProductReadDTO updatedProductReadDTO = this.productService.update(id,productWriteDTO);		
 
 		Map<String, Object> response = new HashMap<>();
 		response.put("mensaje", "¡El Product ha sido actualizado con éxito!");
-		response.put("producto", updatedProductDTO);
+		response.put("producto", updatedProductReadDTO);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}

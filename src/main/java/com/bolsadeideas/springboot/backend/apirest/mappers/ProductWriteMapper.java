@@ -5,15 +5,14 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.ProductEntity;
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductWriteDTO;
 
 @Mapper(componentModel = "spring")
-public interface ProductMapper {
+public interface ProductWriteMapper {
 
-	ProductMapper INSTANCE = Mappers.getMapper(ProductMapper.class);
-
-	ProductDTO productEntityToProductDTO(ProductEntity productEntity);
-
+	ProductWriteMapper INSTANCE = Mappers.getMapper(ProductWriteMapper.class);
+	
+	@Mapping(target = "id", ignore = true)
 	@Mapping(target = "productCategories", ignore = true)
-	ProductEntity productDTOToProductEntity(ProductDTO productDTO);
+	ProductEntity toProductEntity(ProductWriteDTO productWriteDTO);
 }

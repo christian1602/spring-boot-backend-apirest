@@ -2,12 +2,13 @@ package com.bolsadeideas.springboot.backend.apirest.service.interfaces;
 
 import java.util.List;
 
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductCategoryDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductCategoryReadDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductCategoryWriteDTO;
 
 public interface IProductCategoryService {
-	List<ProductCategoryDTO> findAll();
-	ProductCategoryDTO findById(Long id);
-	ProductCategoryDTO save(ProductCategoryDTO productCategoryDTO);
-	ProductCategoryDTO update(Long id, ProductCategoryDTO productCategoryDTO);
+	List<ProductCategoryReadDTO> findAll();
+	ProductCategoryReadDTO findById(Long id);
+	ProductCategoryReadDTO save(ProductCategoryWriteDTO productCategoryWriteDTO);
+	ProductCategoryReadDTO update(Long id, ProductCategoryWriteDTO productCategoryWriteDTO);
 	void delete(Long id);
 }

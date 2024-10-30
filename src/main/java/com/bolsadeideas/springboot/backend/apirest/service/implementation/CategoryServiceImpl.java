@@ -9,58 +9,65 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.bolsadeideas.springboot.backend.apirest.exception.CategoryAlreadyExistsInProductCategoryException;
 import com.bolsadeideas.springboot.backend.apirest.exception.CategoryNotFoundException;
-import com.bolsadeideas.springboot.backend.apirest.mappers.CategoryMapper;
+import com.bolsadeideas.springboot.backend.apirest.mappers.CategoryReadMapper;
+import com.bolsadeideas.springboot.backend.apirest.mappers.CategoryWriteMapper;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.CategoryEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.ICategoryRepository;
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.CategoryDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.CategoryReadDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.CategoryWriteDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.ICategoryService;
 
 @Service
 public class CategoryServiceImpl implements ICategoryService {
 
 	private final ICategoryRepository categoryRepository;
-	private final CategoryMapper categoryMapper;
+	private final CategoryReadMapper categoryReadMapper;
+	private final CategoryWriteMapper categoryWriteMapper;
 
-	public CategoryServiceImpl(ICategoryRepository categoryRepository, CategoryMapper categoryMapper) {
+	public CategoryServiceImpl(
+			ICategoryRepository categoryRepository, 
+			CategoryReadMapper categoryReadMapper, 
+			CategoryWriteMapper categoryWriteMapper) {
 		this.categoryRepository = categoryRepository;
-		this.categoryMapper = categoryMapper;
+		this.categoryReadMapper = categoryReadMapper;
+		this.categoryWriteMapper = categoryWriteMapper;
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<CategoryDTO> findAll() {		
+	public List<CategoryReadDTO> findAll() {		
 		Iterable<CategoryEntity> categories = this.categoryRepository.findAll();		
 		return StreamSupport.stream(categories.spliterator(), false)
-				.map(this.categoryMapper::categoryEntityToCategoryDTO)
+				.map(this.categoryReadMapper::toCategoryReadDTO)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public CategoryDTO findById(Long id) {
+	public CategoryReadDTO findById(Long id) {
 		CategoryEntity categoryEntity = this.categoryRepository.findById(id)
 			.orElseThrow(() -> new CategoryNotFoundException("Category not found with ID: ".concat(id.toString()))); 
-		return this.categoryMapper.categoryEntityToCategoryDTO(categoryEntity);
+		return this.categoryReadMapper.toCategoryReadDTO(categoryEntity);
 	}
 
 	@Override
 	@Transactional
-	public CategoryDTO save(CategoryDTO categoryDTO) {
-		CategoryEntity categoryEntity = this.categoryMapper.categoryDTOToCategoryEntity(categoryDTO);
-		CategoryEntity categoryEntitySaved = this.categoryRepository.save(categoryEntity); 
-		return this.categoryMapper.categoryEntityToCategoryDTO(categoryEntitySaved);
+	public CategoryReadDTO save(CategoryWriteDTO categoryWriteDTO) {
+		CategoryEntity categoryEntity = this.categoryWriteMapper.toCategoryEntity(categoryWriteDTO);
+		CategoryEntity savedCategoryEntity = this.categoryRepository.save(categoryEntity); 
+		return this.categoryReadMapper.toCategoryReadDTO(savedCategoryEntity);
 	}
 	
 	@Override
 	@Transactional
-	public CategoryDTO update(Long id, CategoryDTO categoryDTO) {
+	public CategoryReadDTO update(Long id, CategoryWriteDTO categoryWriteDTO) {
 		CategoryEntity existingCategoryEntity = this.categoryRepository.findById(id)
 				.orElseThrow(() -> new CategoryNotFoundException("Category not found with ID: ".concat(id.toString())));
 		
-		existingCategoryEntity.setName(categoryDTO.name());
+		existingCategoryEntity.setName(categoryWriteDTO.name());
 		
 		CategoryEntity updatedCategoryEntity = this.categoryRepository.save(existingCategoryEntity);
-		return this.categoryMapper.categoryEntityToCategoryDTO(updatedCategoryEntity);
+		return this.categoryReadMapper.toCategoryReadDTO(updatedCategoryEntity);
 	}
 
 	@Override

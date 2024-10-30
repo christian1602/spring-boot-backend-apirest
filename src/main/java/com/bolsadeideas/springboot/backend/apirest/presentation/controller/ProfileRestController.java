@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataException;
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProfileDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProfileReadDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProfileWriteDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IProfileService;
 
 import jakarta.validation.Valid;
@@ -34,27 +35,27 @@ public class ProfileRestController {
 	}
 
 	@GetMapping("/profiles")
-	public List<ProfileDTO> index() {
+	public List<ProfileReadDTO> index() {
 		return this.profileService.findAll();
 	}
 
 	@GetMapping("/profiles/{id}")
 	public ResponseEntity<?> show(@PathVariable Long id) {
-		ProfileDTO perfilDTO = this.profileService.findById(id);
-		return new ResponseEntity<ProfileDTO>(perfilDTO, HttpStatus.OK);
+		ProfileReadDTO perfilReadDTO = this.profileService.findById(id);
+		return new ResponseEntity<ProfileReadDTO>(perfilReadDTO, HttpStatus.OK);
 	}
 
 	@PostMapping("/profiles")
-	public ResponseEntity<?> create(@Valid @RequestBody ProfileDTO profileDTO, BindingResult result) {
+	public ResponseEntity<?> create(@Valid @RequestBody ProfileWriteDTO profileWriteDTO, BindingResult result) {
 		if (result.hasErrors()) {
 			throw new InvalidDataException(result);
-		}		
+		}
 		
-		ProfileDTO savedProfileDTO = this.profileService.save(profileDTO);		
+		ProfileReadDTO savedProfileReadDTO = this.profileService.save(profileWriteDTO);		
 
 		Map<String, Object> response = new HashMap<>();
 		response.put("mensaje", "¡El perfil ha sido creado con éxito!");
-		response.put("perfil", savedProfileDTO);
+		response.put("perfil", savedProfileReadDTO);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}

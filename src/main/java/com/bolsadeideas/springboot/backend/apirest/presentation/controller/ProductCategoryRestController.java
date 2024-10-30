@@ -18,7 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataException;
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductCategoryDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductCategoryReadDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductCategoryWriteDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IProductCategoryService;
 
 import jakarta.validation.Valid;
@@ -35,42 +36,42 @@ public class ProductCategoryRestController {
 	}
 
 	@GetMapping("/product_category")
-	public List<ProductCategoryDTO> index() {
+	public List<ProductCategoryReadDTO> index() {
 		return this.productCategoryService.findAll();
 	}
 
 	@GetMapping("/product_category/{id}")
 	public ResponseEntity<?> show(@PathVariable Long id) {
-		ProductCategoryDTO productCategoryDTO = this.productCategoryService.findById(id);
-		return new ResponseEntity<ProductCategoryDTO>(productCategoryDTO, HttpStatus.OK);
+		ProductCategoryReadDTO productCategoryReadDTO = this.productCategoryService.findById(id);
+		return new ResponseEntity<ProductCategoryReadDTO>(productCategoryReadDTO, HttpStatus.OK);
 	}
 
 	@PostMapping("/product_category")
-	public ResponseEntity<?> create(@Valid @RequestBody ProductCategoryDTO productCategoryDTO, BindingResult result) {
+	public ResponseEntity<?> create(@Valid @RequestBody ProductCategoryWriteDTO ProductCategoryWriteDTO, BindingResult result) {
 		if (result.hasErrors()) {
 			throw new InvalidDataException(result);
 		}
 		
-		ProductCategoryDTO nuevoProductCategoryDTO = this.productCategoryService.save(productCategoryDTO);
+		ProductCategoryReadDTO newProductCategoryReadDTO = this.productCategoryService.save(ProductCategoryWriteDTO);
 		
 		Map<String, Object> response = new HashMap<>();
 		response.put("mensaje", "¡El ProductCategory ha sido creado con éxito!");
-		response.put("productCategory", nuevoProductCategoryDTO);
+		response.put("productCategory", newProductCategoryReadDTO);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/product_category/{id}")
-	public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody ProductCategoryDTO productCategoryDTO, BindingResult result) {
+	public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody ProductCategoryWriteDTO ProductCategoryWriteDTO, BindingResult result) {
 		if (result.hasErrors()) {
 			throw new InvalidDataException(result);
 		}
 		
-		ProductCategoryDTO updatedProductCategoryDTO = this.productCategoryService.update(id,productCategoryDTO);
+		ProductCategoryReadDTO updatedProductCategoryReadDTO = this.productCategoryService.update(id,ProductCategoryWriteDTO);
 
 		Map<String, Object> response = new HashMap<>();
 		response.put("mensaje", "¡El ProductCategory ha sido actualizado con éxito!");
-		response.put("productCategory", updatedProductCategoryDTO);
+		response.put("productCategory", updatedProductCategoryReadDTO);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}

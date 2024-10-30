@@ -26,7 +26,10 @@ public class ProductEntity {
 	@Column(name = "name", nullable = false)
 	private String name;
 
-	@OneToMany(targetEntity = ProductCategoryEntity.class, fetch = FetchType.LAZY, mappedBy = "product")
+	@OneToMany(
+			targetEntity = ProductCategoryEntity.class, 
+			fetch = FetchType.LAZY, 
+			mappedBy = "product")
 	@JsonBackReference(value = "productReference")
 	private Set<ProductCategoryEntity> productCategories = new HashSet<>();
 

@@ -26,18 +26,13 @@ public class ProfileEntity {
 	@Column(name = "website", nullable = false)
 	private String website;
 
-	@OneToOne(targetEntity = UserEntity.class, cascade = CascadeType.PERSIST)
+	@OneToOne(
+			targetEntity = UserEntity.class, 
+			cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "user_id", nullable = false)
 	private UserEntity user;
 
 	public ProfileEntity() {
-	}
-
-	public ProfileEntity(Long id, String bio, String website, UserEntity user) {
-		this.id = id;
-		this.bio = bio;
-		this.website = website;
-		this.user = user;
 	}
 
 	public Long getId() {

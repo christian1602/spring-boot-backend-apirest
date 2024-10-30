@@ -11,12 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bolsadeideas.springboot.backend.apirest.exception.ProfileNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.exception.UserAlreadyHasProfileException;
 import com.bolsadeideas.springboot.backend.apirest.exception.UserNotFoundException;
-import com.bolsadeideas.springboot.backend.apirest.mappers.ProfileMapper;
+import com.bolsadeideas.springboot.backend.apirest.mappers.ProfileReadMapper;
+import com.bolsadeideas.springboot.backend.apirest.mappers.ProfileWriteMapper;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.ProfileEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.UserEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IProfileRepository;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IUserRepository;
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProfileDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProfileReadDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProfileWriteDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IProfileService;
 
 @Service
@@ -24,36 +26,42 @@ public class ProfileServiceImpl implements IProfileService {
 	
 	private final IProfileRepository profileRepository;
 	private final IUserRepository userRepository;
-	private final ProfileMapper profileMapper;
+	private final ProfileReadMapper profileReadMapper;
+	private final ProfileWriteMapper profileWriteMapper;
 	
-	public ProfileServiceImpl(IProfileRepository profileRepository, IUserRepository userRepository, ProfileMapper profileMapper) {
+	public ProfileServiceImpl(
+			IProfileRepository profileRepository,
+			IUserRepository userRepository, 
+			ProfileReadMapper profileReadMapper, 
+			ProfileWriteMapper profileWriteMapper) {
 		this.profileRepository = profileRepository;
 		this.userRepository = userRepository;
-		this.profileMapper = profileMapper;
+		this.profileReadMapper = profileReadMapper;
+		this.profileWriteMapper = profileWriteMapper;
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<ProfileDTO> findAll() {
+	public List<ProfileReadDTO> findAll() {
 		Iterable<ProfileEntity> profiles = this.profileRepository.findAll();
 		return StreamSupport.stream(profiles.spliterator(), false)
-				.map(this.profileMapper::ProfileEntityToProfileDTO)
+				.map(this.profileReadMapper::ToProfileReadDTO)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public ProfileDTO findById(Long id) {
+	public ProfileReadDTO findById(Long id) {
 		ProfileEntity profileEntity = this.profileRepository.findById(id)
 				.orElseThrow(() -> new ProfileNotFoundException("Profile not found with ID: ".concat(id.toString())));		 
-		return this.profileMapper.ProfileEntityToProfileDTO(profileEntity);
+		return this.profileReadMapper.ToProfileReadDTO(profileEntity);
 	}
 
 	@Override
 	@Transactional
-	public ProfileDTO save(ProfileDTO profileDTO) {
-		UserEntity userEntity = this.userRepository.findById(profileDTO.userId())
-				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(profileDTO.userId().toString())));
+	public ProfileReadDTO save(ProfileWriteDTO profileWriteDTO) {
+		UserEntity userEntity = this.userRepository.findById(profileWriteDTO.userId())
+				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(profileWriteDTO.userId().toString())));
 		
 		Optional<ProfileEntity> existingProfileEntityOptional = this.profileRepository.findByUserId(userEntity.getId());
 		
@@ -61,11 +69,11 @@ public class ProfileServiceImpl implements IProfileService {
 			throw new UserAlreadyHasProfileException("User with ID: ".concat(userEntity.getId().toString()).concat(" already has a profile"));
 		} 
 		
-		ProfileEntity profileEntity = this.profileMapper.profileDTOToProfileEntity(profileDTO);
+		ProfileEntity profileEntity = this.profileWriteMapper.toProfileEntity(profileWriteDTO);
 		profileEntity.setUser(userEntity);
-		ProfileEntity profileEntitySaved = this.profileRepository.save(profileEntity);
+		ProfileEntity savedProfileEntity = this.profileRepository.save(profileEntity);
 		
-		return this.profileMapper.ProfileEntityToProfileDTO(profileEntitySaved);
+		return this.profileReadMapper.ToProfileReadDTO(savedProfileEntity);
 	}
 
 	@Override

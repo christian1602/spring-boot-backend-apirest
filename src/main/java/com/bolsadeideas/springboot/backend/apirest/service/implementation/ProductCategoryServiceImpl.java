@@ -12,14 +12,16 @@ import com.bolsadeideas.springboot.backend.apirest.exception.CategoryNotFoundExc
 import com.bolsadeideas.springboot.backend.apirest.exception.ProductAndCategoryAlreadyExistsInProductCategoryException;
 import com.bolsadeideas.springboot.backend.apirest.exception.ProductCategoryNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.exception.ProductNotFoundException;
-import com.bolsadeideas.springboot.backend.apirest.mappers.ProductCategoryMapper;
+import com.bolsadeideas.springboot.backend.apirest.mappers.ProductCategoryReadMapper;
+import com.bolsadeideas.springboot.backend.apirest.mappers.ProductCategoryWriteMapper;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.CategoryEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.ProductCategoryEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.ProductEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.ICategoryRepository;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IProductCategoryRepository;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IProductRepository;
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductCategoryDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductCategoryReadDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductCategoryWriteDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IProductCategoryService;
 
 @Service
@@ -28,100 +30,80 @@ public class ProductCategoryServiceImpl implements IProductCategoryService {
 	private final IProductCategoryRepository productCategoryRepository;
 	private final IProductRepository productRepository;
 	private final ICategoryRepository categoryRepository;
-	private final ProductCategoryMapper productCategoryMapper;
+	private final ProductCategoryReadMapper productCategoryReadMapper;
+	private final ProductCategoryWriteMapper productCategoryWriteMapper;
 
 	public ProductCategoryServiceImpl(
 			IProductCategoryRepository productCategoryRepository,
 			IProductRepository productRepository, 
 			ICategoryRepository categoryRepository,
-			ProductCategoryMapper productCategoryMapper) {
+			ProductCategoryReadMapper productCategoryReadMapper,
+			ProductCategoryWriteMapper productCategoryWriteMapper
+			) {
 		this.productCategoryRepository = productCategoryRepository;
 		this.productRepository = productRepository;
 		this.categoryRepository = categoryRepository;
-		this.productCategoryMapper = productCategoryMapper;
+		this.productCategoryReadMapper = productCategoryReadMapper;
+		this.productCategoryWriteMapper = productCategoryWriteMapper;
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<ProductCategoryDTO> findAll() {
+	public List<ProductCategoryReadDTO> findAll() {
 		Iterable<ProductCategoryEntity> productCategories = this.productCategoryRepository.findAll();
 		return StreamSupport.stream(productCategories.spliterator(), false)
-				.map(this.productCategoryMapper::productCategoryEntityToProductCategoryDTO)
+				.map(this.productCategoryReadMapper::toProductCategoryReadDTO)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public ProductCategoryDTO findById(Long id) {
+	public ProductCategoryReadDTO findById(Long id) {
 		ProductCategoryEntity productCategoryEntity = this.productCategoryRepository.findById(id)
 				.orElseThrow(() -> new ProductCategoryNotFoundException("Product and Category not found with ID: ".concat(id.toString())));				
-		return this.productCategoryMapper.productCategoryEntityToProductCategoryDTO(productCategoryEntity);
+		return this.productCategoryReadMapper.toProductCategoryReadDTO(productCategoryEntity);
 	}
 
 	@Override
 	@Transactional
-	public ProductCategoryDTO save(ProductCategoryDTO productCategoryDTO) {
-		ProductCategoryEntity productCategoryEntity = this.productCategoryMapper.productCategoryDTOToProductCategoryEntity(productCategoryDTO);
+	public ProductCategoryReadDTO save(ProductCategoryWriteDTO productCategoryWriteDTO) {		
+		ProductEntity productEntity = this.productRepository.findById(productCategoryWriteDTO.productId())
+				.orElseThrow(()-> new ProductNotFoundException("Product not found with ID: ".concat(productCategoryWriteDTO.productId().toString())));
 		
-		ProductEntity productEntity = this.productRepository.findById(productCategoryDTO.productId())
-				.orElseThrow(()-> new ProductNotFoundException("Product not found with ID: ".concat(productCategoryDTO.productId().toString())));
+		CategoryEntity categoryEntity = this.categoryRepository.findById(productCategoryWriteDTO.categoryId())
+				.orElseThrow(()-> new CategoryNotFoundException("Category not found with ID: ".concat(productCategoryWriteDTO.categoryId().toString())));		
 		
-		CategoryEntity categoryEntity = this.categoryRepository.findById(productCategoryDTO.categoryId())
-				.orElseThrow(()-> new CategoryNotFoundException("Category not found with ID: ".concat(productCategoryDTO.categoryId().toString())));
+		this.validateIfAlreadyExistsInProductCategory(productCategoryWriteDTO);
 		
-		Optional<ProductCategoryEntity> productCategoryEntityOptional = this.productCategoryRepository.findByProductIdAndCategoryId(productCategoryDTO.productId(),productCategoryDTO.categoryId());
-		
-		if (productCategoryEntityOptional.isPresent()) {
-			throw new ProductAndCategoryAlreadyExistsInProductCategoryException("Product with ID: "
-					.concat(productCategoryDTO.productId().toString())
-					.concat(" and Category with ID: ")
-					.concat(productCategoryDTO.categoryId().toString())
-					.concat(" exists"));	
-		}			
-				
+		ProductCategoryEntity productCategoryEntity = this.productCategoryWriteMapper.toProductCategoryEntity(productCategoryWriteDTO);		
 		productCategoryEntity.setProduct(productEntity);
 		productCategoryEntity.setCategory(categoryEntity);
+		ProductCategoryEntity savedProductCategoryEntity = this.productCategoryRepository.save(productCategoryEntity); 
 		
-		ProductCategoryEntity productCategoryEntitySaved = this.productCategoryRepository.save(productCategoryEntity); 
-		
-		return this.productCategoryMapper.productCategoryEntityToProductCategoryDTO(productCategoryEntitySaved);
+		return this.productCategoryReadMapper.toProductCategoryReadDTO(savedProductCategoryEntity);
 	}
 	
 	@Override
 	@Transactional
-	public ProductCategoryDTO update(Long id, ProductCategoryDTO productCategoryDTO) {
+	public ProductCategoryReadDTO update(Long id, ProductCategoryWriteDTO productCategoryWriteDTO) {
 		ProductCategoryEntity existingProductCategoryEntity = this.productCategoryRepository.findById(id)
 				.orElseThrow(() -> new ProductCategoryNotFoundException("Product and Category not found with ID: ".concat(id.toString())));
 		
-		ProductEntity productEntity = this.productRepository.findById(productCategoryDTO.productId())
-				.orElseThrow(()-> new ProductNotFoundException("Product not found with ID: ".concat(productCategoryDTO.productId().toString())));
+		ProductEntity productEntity = this.productRepository.findById(productCategoryWriteDTO.productId())
+				.orElseThrow(()-> new ProductNotFoundException("Product not found with ID: ".concat(productCategoryWriteDTO.productId().toString())));
 		
-		CategoryEntity categoryEntity = this.categoryRepository.findById(productCategoryDTO.categoryId())
-				.orElseThrow(()-> new CategoryNotFoundException("Category not found with ID: ".concat(productCategoryDTO.categoryId().toString())));		
+		CategoryEntity categoryEntity = this.categoryRepository.findById(productCategoryWriteDTO.categoryId())
+				.orElseThrow(()-> new CategoryNotFoundException("Category not found with ID: ".concat(productCategoryWriteDTO.categoryId().toString())));		
 		
-		// Si la combinación de product_id y category_id cambio
-		if (!existingProductCategoryEntity.getProduct().getId().equals(productCategoryDTO.productId()) || 
-			!existingProductCategoryEntity.getCategory().getId().equals(productCategoryDTO.categoryId())) {
-						
-			// Validar si la nueva combinación ya existe en otro registro
-			Optional<ProductCategoryEntity> existingOptional = this.productCategoryRepository.findByProductIdAndCategoryId(productCategoryDTO.productId(),productCategoryDTO.categoryId());
-			
-			if (existingOptional.isPresent() && !existingOptional.get().getId().equals(id)) {			
-				throw new ProductAndCategoryAlreadyExistsInProductCategoryException("Product with ID: "
-						.concat(productCategoryDTO.productId().toString())
-						.concat(" and Category with ID: ")
-						.concat(productCategoryDTO.categoryId().toString())
-						.concat(" exists"));
-			}
-		}
+		this.validateIfIfTheNewCombinationAlreadyExistsInOtherRecords(id, existingProductCategoryEntity, productCategoryWriteDTO);
 		
-		existingProductCategoryEntity.setDescription(productCategoryDTO.description());
+		existingProductCategoryEntity.setDescription(productCategoryWriteDTO.description());
 		existingProductCategoryEntity.setProduct(productEntity);
 		existingProductCategoryEntity.setCategory(categoryEntity);
 		
 		ProductCategoryEntity updatedProductCategoryEntity = this.productCategoryRepository.save(existingProductCategoryEntity);
 		
-		return this.productCategoryMapper.productCategoryEntityToProductCategoryDTO(updatedProductCategoryEntity);
+		return this.productCategoryReadMapper.toProductCategoryReadDTO(updatedProductCategoryEntity);
 	}
 
 	@Override
@@ -131,5 +113,37 @@ public class ProductCategoryServiceImpl implements IProductCategoryService {
 			.orElseThrow(() -> new ProductCategoryNotFoundException("Product and Category not found with ID: ".concat(id.toString())));
 		
 		this.productCategoryRepository.deleteById(id);
+	}
+	
+	private void validateIfAlreadyExistsInProductCategory(ProductCategoryWriteDTO productCategoryWriteDTO) {
+		Optional<ProductCategoryEntity> productCategoryEntityOptional = this.productCategoryRepository
+				.findByProductIdAndCategoryId(productCategoryWriteDTO.productId(),productCategoryWriteDTO.categoryId());		
+		
+		if (productCategoryEntityOptional.isPresent()) {
+			throw new ProductAndCategoryAlreadyExistsInProductCategoryException("Product with ID: "
+					.concat(productCategoryWriteDTO.productId().toString())
+					.concat(" and Category with ID: ")
+					.concat(productCategoryWriteDTO.categoryId().toString())
+					.concat(" exists"));
+		}
+	}
+	
+	private void validateIfIfTheNewCombinationAlreadyExistsInOtherRecords(Long id,ProductCategoryEntity existingProductCategoryEntity,ProductCategoryWriteDTO productCategoryWriteDTO) {
+		// SI LA COMBINACION DE product_id y category_id CAMBIO
+		if (!existingProductCategoryEntity.getProduct().getId().equals(productCategoryWriteDTO.productId()) || 
+			!existingProductCategoryEntity.getCategory().getId().equals(productCategoryWriteDTO.categoryId())) {
+
+			// VALIDAR SI LA NUEVA COMBINACION YA ESITE EN OTROS REGISTROS
+			Optional<ProductCategoryEntity> existingOptional = this.productCategoryRepository
+					.findByProductIdAndCategoryId(productCategoryWriteDTO.productId(),productCategoryWriteDTO.categoryId());
+			
+			if (existingOptional.isPresent() && !existingOptional.get().getId().equals(id)) {			
+				throw new ProductAndCategoryAlreadyExistsInProductCategoryException("Product with ID: "
+						.concat(productCategoryWriteDTO.productId().toString())
+						.concat(" and Category with ID: ")
+						.concat(productCategoryWriteDTO.categoryId().toString())
+						.concat(" exists"));
+			}
+		}
 	}
 }
