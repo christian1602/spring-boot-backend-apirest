@@ -92,7 +92,7 @@ public class PostRestController {
 	@GetMapping("/posts-api/{id}")
 	public ResponseEntity<?> showApi(@PathVariable Long id) {
 		PostReadWithUserIdDTO postReadWithUserIdDTO = this.postApiService.apiFindById(id);
-		return new ResponseEntity<PostReadWithUserIdDTO>(postReadWithUserIdDTO, HttpStatus.OK);
+		return new ResponseEntity<>(postReadWithUserIdDTO, HttpStatus.OK);
 	}
 
 	// USANDO LA INTERFACE IPostService
@@ -105,7 +105,7 @@ public class PostRestController {
 	@GetMapping("/posts/{id}")
 	public ResponseEntity<?> show(@PathVariable Long id) {
 		PostReadDTO postReadDTO = this.postService.findById(id);
-		return new ResponseEntity<PostReadDTO>(postReadDTO, HttpStatus.OK);
+		return new ResponseEntity<>(postReadDTO, HttpStatus.OK);
 	}
 
 	@PostMapping("/posts")
@@ -117,7 +117,7 @@ public class PostRestController {
 		PostReadDTO newPostReadDTO = this.postService.save(postWriteDTO);
 		ApiResponseDTO<PostReadDTO> response = new ApiResponseDTO<>("¡El Post ha sido creado con éxito!",newPostReadDTO);	
 
-		return new ResponseEntity<ApiResponseDTO<PostReadDTO>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/posts/{id}")
@@ -129,7 +129,7 @@ public class PostRestController {
 		PostReadDTO updatedPostReadDTO = this.postService.update(id, postWriteDTO);
 		ApiResponseDTO<PostReadDTO> response = new ApiResponseDTO<>("¡El Post ha sido actualizado con éxito!",updatedPostReadDTO);
 		
-		return new ResponseEntity<ApiResponseDTO<PostReadDTO>>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/posts/{id}")
@@ -138,6 +138,6 @@ public class PostRestController {
 		
 		ApiResponseDTO<PostReadDTO> response = new ApiResponseDTO<>("¡El Post ha sido eliminado con éxito!",null);
 			
-		return new ResponseEntity<ApiResponseDTO<PostReadDTO>>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }

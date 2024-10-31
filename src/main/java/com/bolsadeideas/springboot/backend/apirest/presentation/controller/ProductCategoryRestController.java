@@ -42,7 +42,7 @@ public class ProductCategoryRestController {
 	@GetMapping("/product_category/{id}")
 	public ResponseEntity<?> show(@PathVariable Long id) {
 		ProductCategoryReadDTO productCategoryReadDTO = this.productCategoryService.findById(id);
-		return new ResponseEntity<ProductCategoryReadDTO>(productCategoryReadDTO, HttpStatus.OK);
+		return new ResponseEntity<>(productCategoryReadDTO, HttpStatus.OK);
 	}
 
 	@PostMapping("/product_category")
@@ -54,7 +54,7 @@ public class ProductCategoryRestController {
 		ProductCategoryReadDTO newProductCategoryReadDTO = this.productCategoryService.save(ProductCategoryWriteDTO);		
 		ApiResponseDTO<ProductCategoryReadDTO> response = new ApiResponseDTO<>("¡El ProductCategory ha sido creado con éxito!",newProductCategoryReadDTO);
 
-		return new ResponseEntity<ApiResponseDTO<ProductCategoryReadDTO>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/product_category/{id}")
@@ -66,7 +66,7 @@ public class ProductCategoryRestController {
 		ProductCategoryReadDTO updatedProductCategoryReadDTO = this.productCategoryService.update(id,ProductCategoryWriteDTO);		
 		ApiResponseDTO<ProductCategoryReadDTO> response = new ApiResponseDTO<>("¡El ProductCategory ha sido actualizado con éxito!",updatedProductCategoryReadDTO);
 
-		return new ResponseEntity<ApiResponseDTO<ProductCategoryReadDTO>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/product_category/{id}")
@@ -75,6 +75,6 @@ public class ProductCategoryRestController {
 		
 		ApiResponseDTO<ProductCategoryReadDTO> response = new ApiResponseDTO<>("¡El ProductCategory ha sido eliminado con éxito!",null);		
 
-		return new ResponseEntity<ApiResponseDTO<ProductCategoryReadDTO>>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }

@@ -1,6 +1,7 @@
 package com.bolsadeideas.springboot.backend.apirest.service.implementation;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -43,8 +44,13 @@ public class PostApiServiceImpl implements IPostApiService {
 	public List<PostReadWithUserIdDTO> apiFetchPostsRestTemplate() {
 		String url = this.postApiUrl.concat("/posts/");
 		PostReadWithUserIdDTO[] postReadWithUserIdDTOArray = this.restTemplate.getForObject(url, PostReadWithUserIdDTO[].class);
-		return Arrays.asList(postReadWithUserIdDTOArray);
-	}
+
+		if (postReadWithUserIdDTOArray != null) {
+            return Arrays.asList(postReadWithUserIdDTOArray);
+        }
+
+		return Collections.emptyList();
+    }
 	
 	@Override
 	public List<PostReadWithUserIdDTO> apiFetchPostsWebClient() {

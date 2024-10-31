@@ -36,7 +36,7 @@ public class ClienteEntity {
 	private LocalDateTime createdAt;
 
 	@PrePersist
-	public void prePerist() {
+	public void prePersist() {
 		this.createdAt = LocalDateTime.now();
 	}
 

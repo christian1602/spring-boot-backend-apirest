@@ -11,5 +11,5 @@ public interface ProfileReadMapper {
 
 	ProfileReadMapper INSTANCE = Mappers.getMapper(ProfileReadMapper.class);
 	
-	ProfileReadDTO ToProfileReadDTO(ProfileEntity profileEntity);
+	ProfileReadDTO toProfileReadDTO(ProfileEntity profileEntity);
 }

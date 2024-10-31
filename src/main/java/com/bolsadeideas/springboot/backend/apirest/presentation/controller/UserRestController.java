@@ -36,7 +36,7 @@ public class UserRestController {
 	// @PreAuthorize("hasAuthority('CREATE')")
 	public ResponseEntity<?> show(@PathVariable Long id) {
 		UserReadDTO userReadDTO = this.userService.findById(id);
-		return new ResponseEntity<UserReadDTO>(userReadDTO, HttpStatus.OK);
+		return new ResponseEntity<>(userReadDTO, HttpStatus.OK);
 	}
 
 	/*
@@ -79,6 +79,6 @@ public class UserRestController {
 		this.userService.delete(id);		
 
 		ApiResponseDTO<UserReadDTO> response = new ApiResponseDTO<>("¡El Usuario ha sido eliminado con éxito!",null);
-		return new ResponseEntity<ApiResponseDTO<UserReadDTO>>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }

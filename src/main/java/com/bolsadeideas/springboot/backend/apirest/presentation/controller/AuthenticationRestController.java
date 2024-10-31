@@ -44,7 +44,7 @@ public class AuthenticationRestController {
 		}
     	
     	AuthResponseDTO authResponseDTO = this.userDetailsService.createUser(userWriteDTO);
-    	return new ResponseEntity<AuthResponseDTO>(authResponseDTO, HttpStatus.CREATED);
+    	return new ResponseEntity<>(authResponseDTO, HttpStatus.CREATED);
     }
     
     @PostMapping("/update/{id}")
@@ -54,7 +54,7 @@ public class AuthenticationRestController {
 		}
     	
     	AuthResponseDTO authResponseDTO = this.userDetailsService.updateUser(id, userWriteDTO);
-    	return new ResponseEntity<AuthResponseDTO>(authResponseDTO, HttpStatus.OK);
+    	return new ResponseEntity<>(authResponseDTO, HttpStatus.OK);
     }
     
     @PostMapping("/log-in")
@@ -87,7 +87,7 @@ public class AuthenticationRestController {
 		}
     	
     	AuthResponseDTO authResponseDTO = this.userDetailsService.loginUser(authLoginDTO);
-    	return new ResponseEntity<AuthResponseDTO>(authResponseDTO, HttpStatus.OK);
+    	return new ResponseEntity<>(authResponseDTO, HttpStatus.OK);
     }
     
     @PostMapping("/refresh-token")
@@ -97,7 +97,7 @@ public class AuthenticationRestController {
 		}
     	
     	AuthResponseDTO authResponseDTO = this.userDetailsService.refreshToken(refreshTokenDTO);
-    	return new ResponseEntity<AuthResponseDTO>(authResponseDTO, HttpStatus.OK);
+    	return new ResponseEntity<>(authResponseDTO, HttpStatus.OK);
     }
     
     @PostMapping("/update-password")
@@ -107,6 +107,6 @@ public class AuthenticationRestController {
 		}
     	
     	AuthResponseDTO authResponseDTO = this.userDetailsService.updatePassword(updatePasswordDTO);    	
-    	return new ResponseEntity<AuthResponseDTO>(authResponseDTO, HttpStatus.OK);
+    	return new ResponseEntity<>(authResponseDTO, HttpStatus.OK);
     }
 }

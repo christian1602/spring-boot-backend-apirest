@@ -41,7 +41,7 @@ public class ProfileRestController {
 	@GetMapping("/profiles/{id}")
 	public ResponseEntity<?> show(@PathVariable Long id) {
 		ProfileReadDTO perfilReadDTO = this.profileService.findById(id);
-		return new ResponseEntity<ProfileReadDTO>(perfilReadDTO, HttpStatus.OK);
+		return new ResponseEntity<>(perfilReadDTO, HttpStatus.OK);
 	}
 
 	@PostMapping("/profiles")
@@ -53,7 +53,7 @@ public class ProfileRestController {
 		ProfileReadDTO savedProfileReadDTO = this.profileService.save(profileWriteDTO);		
 		ApiResponseDTO<ProfileReadDTO> response = new ApiResponseDTO<>("¡El perfil ha sido creado con éxito!",savedProfileReadDTO);
 		
-		return new ResponseEntity<ApiResponseDTO<ProfileReadDTO>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/profiles/{id}")
@@ -62,6 +62,6 @@ public class ProfileRestController {
 		
 		ApiResponseDTO<ProfileReadDTO> response = new ApiResponseDTO<>("¡El Perfil ha sido eliminado con éxito!",null);
 
-		return new ResponseEntity<ApiResponseDTO<ProfileReadDTO>>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }

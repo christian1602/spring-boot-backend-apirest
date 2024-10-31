@@ -68,7 +68,7 @@ public class UserEntity {
 	@JsonManagedReference
 	private List<PostEntity> posts = new ArrayList<>();
 
-	@Column(name = "last_password_change", nullable = true)
+	@Column(name = "last_password_change")
 	private LocalDateTime lastPasswordChange;
 
 	public UserEntity() {

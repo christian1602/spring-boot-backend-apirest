@@ -18,11 +18,12 @@ import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(
-		name = "product_category", 
+		name = "product_category",
 		uniqueConstraints = @UniqueConstraint(
 				columnNames = {"product_id","category_id"}))
 @JsonIdentityInfo(
-		generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+		generator = ObjectIdGenerators.PropertyGenerator.class,
+		property = "id")
 public class ProductCategoryEntity {
 
 	@Id

@@ -45,7 +45,7 @@ public class ProfileServiceImpl implements IProfileService {
 	public List<ProfileReadDTO> findAll() {
 		Iterable<ProfileEntity> profiles = this.profileRepository.findAll();
 		return StreamSupport.stream(profiles.spliterator(), false)
-				.map(this.profileReadMapper::ToProfileReadDTO)
+				.map(this.profileReadMapper::toProfileReadDTO)
 				.collect(Collectors.toList());
 	}
 
@@ -54,7 +54,7 @@ public class ProfileServiceImpl implements IProfileService {
 	public ProfileReadDTO findById(Long id) {
 		ProfileEntity profileEntity = this.profileRepository.findById(id)
 				.orElseThrow(() -> new ProfileNotFoundException("Profile not found with ID: ".concat(id.toString())));		 
-		return this.profileReadMapper.ToProfileReadDTO(profileEntity);
+		return this.profileReadMapper.toProfileReadDTO(profileEntity);
 	}
 
 	@Override
@@ -73,7 +73,7 @@ public class ProfileServiceImpl implements IProfileService {
 		profileEntity.setUser(userEntity);
 		ProfileEntity savedProfileEntity = this.profileRepository.save(profileEntity);
 		
-		return this.profileReadMapper.ToProfileReadDTO(savedProfileEntity);
+		return this.profileReadMapper.toProfileReadDTO(savedProfileEntity);
 	}
 
 	@Override

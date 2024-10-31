@@ -42,7 +42,7 @@ public class ProductRestController {
 	@GetMapping("/products/{id}")
 	public ResponseEntity<?> show(@PathVariable Long id) {
 		ProductReadDTO productReadDTO = this.productService.findById(id);
-		return new ResponseEntity<ProductReadDTO>(productReadDTO, HttpStatus.OK);
+		return new ResponseEntity<>(productReadDTO, HttpStatus.OK);
 	}
 
 	@PostMapping("/products")
@@ -54,7 +54,7 @@ public class ProductRestController {
 		ProductReadDTO newProductoReadDTO = this.productService.save(productWriteDTO);		
 		ApiResponseDTO<ProductReadDTO> response = new ApiResponseDTO<>("¡El producto ha sido creado con éxito!",newProductoReadDTO);		
 
-		return new ResponseEntity<ApiResponseDTO<ProductReadDTO>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/products/{id}")
@@ -66,7 +66,7 @@ public class ProductRestController {
 		ProductReadDTO updatedProductReadDTO = this.productService.update(id,productWriteDTO);
 		ApiResponseDTO<ProductReadDTO> response = new ApiResponseDTO<>("¡El Product ha sido actualizado con éxito!",updatedProductReadDTO);
 		
-		return new ResponseEntity<ApiResponseDTO<ProductReadDTO>>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/products/{id}")
@@ -75,6 +75,6 @@ public class ProductRestController {
 		
 		ApiResponseDTO<ProductReadDTO> response = new ApiResponseDTO<>("¡El Product ha sido eliminado con éxito!",null);
 
-		return new ResponseEntity<ApiResponseDTO<ProductReadDTO>>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }

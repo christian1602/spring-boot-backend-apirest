@@ -42,7 +42,7 @@ public class CategoryRestController {
 	@GetMapping("/categories/{id}")
 	public ResponseEntity<?> show(@PathVariable Long id) {
 		CategoryReadDTO categoriaReadDTO = this.categoryService.findById(id);
-		return new ResponseEntity<CategoryReadDTO>(categoriaReadDTO, HttpStatus.OK);
+		return new ResponseEntity<>(categoriaReadDTO, HttpStatus.OK);
 	}
 
 	@PostMapping("/categories")
@@ -54,7 +54,7 @@ public class CategoryRestController {
 		CategoryReadDTO newCategoriaReadDTO = this.categoryService.save(categoryWriteDTO);
 		ApiResponseDTO<CategoryReadDTO> response = new ApiResponseDTO<>("¡La categoria ha sido creada con éxito!",newCategoriaReadDTO);		
 
-		return new ResponseEntity<ApiResponseDTO<CategoryReadDTO>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/categories/{id}")
@@ -66,7 +66,7 @@ public class CategoryRestController {
 		CategoryReadDTO updatedCategoriaReadDTO = this.categoryService.update(id,categoryWriteDTO);
 		ApiResponseDTO<CategoryReadDTO> response = new ApiResponseDTO<>("¡La Categoria ha sido actualizada con éxito!",updatedCategoriaReadDTO);		
 
-		return new ResponseEntity<ApiResponseDTO<CategoryReadDTO>>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/categories/{id}")
@@ -75,6 +75,6 @@ public class CategoryRestController {
 		
 		ApiResponseDTO<CategoryReadDTO> response = new ApiResponseDTO<>("¡El Category ha sido eliminado con éxito!",null);		
 
-		return new ResponseEntity<ApiResponseDTO<CategoryReadDTO>>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }

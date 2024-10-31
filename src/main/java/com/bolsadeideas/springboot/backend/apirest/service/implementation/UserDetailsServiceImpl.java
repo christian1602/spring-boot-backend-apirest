@@ -216,7 +216,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 		UserDetails userDetails = this.getUserDetails(username);
 		
         // VERIFICAR EL PASSWORD ACTUAL
-		if (!this.isPasswordValid(currentPassword, userDetails.getPassword())) {
+		if (this.isPasswordInvalid(currentPassword, userDetails.getPassword())) {
 			throw new BadCredentialsException("Invalid password");
 		}
                 
@@ -234,7 +234,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 	private Authentication authenticate(String username, String password) {
 		UserDetails userDetails = this.getUserDetails(username);
 		
-		if (!this.isPasswordValid(password, userDetails.getPassword())) {
+		if (this.isPasswordInvalid(password, userDetails.getPassword())) {
 			throw new BadCredentialsException("Invalid password");
 		}
 
@@ -268,8 +268,8 @@ public class UserDetailsServiceImpl implements UserDetailsService, IAuthUserServ
 		return decodedJWT;
 	}
 	
-	private boolean isPasswordValid(String rawPassword, String encodedPassword) {
-		return this.passwordEncoder.matches(rawPassword, encodedPassword);
+	private boolean isPasswordInvalid(String rawPassword, String encodedPassword) {
+		return !this.passwordEncoder.matches(rawPassword, encodedPassword);
 	}
 
 	private List<SimpleGrantedAuthority> convertRolesToSimpleGrantedAuthorityList(Set<RoleEntity> roles) {

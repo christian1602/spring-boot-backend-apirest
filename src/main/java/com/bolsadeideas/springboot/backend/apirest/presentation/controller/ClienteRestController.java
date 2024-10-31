@@ -44,7 +44,7 @@ public class ClienteRestController {
 	// DEVUELVE HttpStatus.OK
 	public ResponseEntity<?> show(@PathVariable Long id) {
 		ClienteReadDTO clienteReadDTO = this.clienteService.findById(id);
-		return new ResponseEntity<ClienteReadDTO>(clienteReadDTO, HttpStatus.OK);
+		return new ResponseEntity<>(clienteReadDTO, HttpStatus.OK);
 	}
 
 	@PostMapping("/clientes")
@@ -56,7 +56,7 @@ public class ClienteRestController {
 		ClienteReadDTO newClienteReadDTO = this.clienteService.save(clienteWriteDTO);		
 		ApiResponseDTO<ClienteReadDTO> response = new ApiResponseDTO<>("¡El cliente ha sido creado con éxito!",newClienteReadDTO);		
 
-		return new ResponseEntity<ApiResponseDTO<ClienteReadDTO>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/clientes/{id}")
@@ -68,7 +68,7 @@ public class ClienteRestController {
 		ClienteReadDTO updatedCienteReadDTO = this.clienteService.update(id,clienteWriteDTO);
 		ApiResponseDTO<ClienteReadDTO> response = new ApiResponseDTO<>("¡El cliente ha sido actualizado con éxito!",updatedCienteReadDTO);
 		
-		return new ResponseEntity<ApiResponseDTO<ClienteReadDTO>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/clientes/{id}")
@@ -77,6 +77,6 @@ public class ClienteRestController {
 		
 		ApiResponseDTO<ClienteReadDTO> response = new ApiResponseDTO<>("¡El cliente ha sido eliminado con éxito!",null);		
 
-		return new ResponseEntity<ApiResponseDTO<ClienteReadDTO>>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }

@@ -1,6 +1,7 @@
 package com.bolsadeideas.springboot.backend.apirest.exception.advice;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.dao.DataAccessException;
@@ -121,7 +122,7 @@ public class GlobalExceptionHandler {
 	            .map(fieldError -> "El campo '"
 	            .concat(fieldError.getField())
 	            .concat("' ")
-	            .concat(fieldError.getDefaultMessage()))
+				.concat(Optional.ofNullable(fieldError.getDefaultMessage()).orElse("Sin mensaje de error")))
 	            .collect(Collectors.toList());
 
 		ErrorResponse response = new ErrorResponse("Invalid Data",errors);
