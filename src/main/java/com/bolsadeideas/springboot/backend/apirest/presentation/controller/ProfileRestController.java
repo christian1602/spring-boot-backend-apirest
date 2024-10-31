@@ -1,8 +1,6 @@
 package com.bolsadeideas.springboot.backend.apirest.presentation.controller;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataException;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProfileReadDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProfileWriteDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.response.ApiResponseDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IProfileService;
 
 import jakarta.validation.Valid;
@@ -52,21 +51,17 @@ public class ProfileRestController {
 		}
 		
 		ProfileReadDTO savedProfileReadDTO = this.profileService.save(profileWriteDTO);		
-
-		Map<String, Object> response = new HashMap<>();
-		response.put("mensaje", "¡El perfil ha sido creado con éxito!");
-		response.put("perfil", savedProfileReadDTO);
-
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		ApiResponseDTO<ProfileReadDTO> response = new ApiResponseDTO<>("¡El perfil ha sido creado con éxito!",savedProfileReadDTO);
+		
+		return new ResponseEntity<ApiResponseDTO<ProfileReadDTO>>(response, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/profiles/{id}")
 	public ResponseEntity<?> delete(@PathVariable Long id) {
-		Map<String, Object> response = new HashMap<>();
+		this.profileService.delete(id);		
+		
+		ApiResponseDTO<ProfileReadDTO> response = new ApiResponseDTO<>("¡El Perfil ha sido eliminado con éxito!",null);
 
-		this.profileService.delete(id);
-		response.put("mensaje", "¡El Perfil ha sido eliminado con éxito!");
-
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+		return new ResponseEntity<ApiResponseDTO<ProfileReadDTO>>(response, HttpStatus.OK);
 	}
 }

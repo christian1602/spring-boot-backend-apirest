@@ -31,11 +31,11 @@ import com.bolsadeideas.springboot.backend.apirest.persistence.entity.UserEntity
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IRoleRepository;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IUserRepository;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.UserWriteDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.response.AuthResponseDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.RefreshTokenDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.UpdatePasswordDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IAuthUserService;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthLoginDTO;
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthResponseDTO;
 import com.bolsadeideas.springboot.backend.apirest.utils.JwtUtils;
 
 @Service

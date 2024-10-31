@@ -1,8 +1,6 @@
 package com.bolsadeideas.springboot.backend.apirest.presentation.controller;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +19,7 @@ import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataExceptio
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.PostReadDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.PostReadWithUserIdDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.PostWriteDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.response.ApiResponseDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IPostApiService;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IPostCustomService;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IPostService;
@@ -115,13 +114,10 @@ public class PostRestController {
 			throw new InvalidDataException(result);
 		}
  
-		PostReadDTO nuevoPostReadDTO = this.postService.save(postWriteDTO);
+		PostReadDTO newPostReadDTO = this.postService.save(postWriteDTO);
+		ApiResponseDTO<PostReadDTO> response = new ApiResponseDTO<>("¡El Post ha sido creado con éxito!",newPostReadDTO);	
 
-		Map<String, Object> response = new HashMap<>();
-		response.put("mensaje", "¡El Post ha sido creado con éxito!");
-		response.put("post", nuevoPostReadDTO);
-
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<ApiResponseDTO<PostReadDTO>>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/posts/{id}")
@@ -131,21 +127,17 @@ public class PostRestController {
 		}
 		
 		PostReadDTO updatedPostReadDTO = this.postService.update(id, postWriteDTO);
-
-		Map<String, Object> response = new HashMap<>();
-		response.put("mensaje", "¡El Post ha sido actualizado con éxito!");
-		response.put("post", updatedPostReadDTO);
-
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+		ApiResponseDTO<PostReadDTO> response = new ApiResponseDTO<>("¡El Post ha sido actualizado con éxito!",updatedPostReadDTO);
+		
+		return new ResponseEntity<ApiResponseDTO<PostReadDTO>>(response, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/posts/{id}")
 	public ResponseEntity<?> delete(@PathVariable Long id) {		
 		this.postService.delete(id);
 		
-		Map<String, Object> response = new HashMap<>();
-		response.put("mensaje", "¡El Post ha sido eliminado con éxito!");
-
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+		ApiResponseDTO<PostReadDTO> response = new ApiResponseDTO<>("¡El Post ha sido eliminado con éxito!",null);
+			
+		return new ResponseEntity<ApiResponseDTO<PostReadDTO>>(response, HttpStatus.OK);
 	}
 }

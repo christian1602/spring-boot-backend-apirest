@@ -1,4 +1,4 @@
-package com.bolsadeideas.springboot.backend.apirest.presentation.dto;
+package com.bolsadeideas.springboot.backend.apirest.presentation.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;

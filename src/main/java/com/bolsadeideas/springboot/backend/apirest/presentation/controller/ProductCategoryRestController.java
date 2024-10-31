@@ -1,8 +1,6 @@
 package com.bolsadeideas.springboot.backend.apirest.presentation.controller;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataException;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductCategoryReadDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductCategoryWriteDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.response.ApiResponseDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IProductCategoryService;
 
 import jakarta.validation.Valid;
@@ -52,13 +51,10 @@ public class ProductCategoryRestController {
 			throw new InvalidDataException(result);
 		}
 		
-		ProductCategoryReadDTO newProductCategoryReadDTO = this.productCategoryService.save(ProductCategoryWriteDTO);
-		
-		Map<String, Object> response = new HashMap<>();
-		response.put("mensaje", "¡El ProductCategory ha sido creado con éxito!");
-		response.put("productCategory", newProductCategoryReadDTO);
+		ProductCategoryReadDTO newProductCategoryReadDTO = this.productCategoryService.save(ProductCategoryWriteDTO);		
+		ApiResponseDTO<ProductCategoryReadDTO> response = new ApiResponseDTO<>("¡El ProductCategory ha sido creado con éxito!",newProductCategoryReadDTO);
 
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<ApiResponseDTO<ProductCategoryReadDTO>>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/product_category/{id}")
@@ -67,22 +63,18 @@ public class ProductCategoryRestController {
 			throw new InvalidDataException(result);
 		}
 		
-		ProductCategoryReadDTO updatedProductCategoryReadDTO = this.productCategoryService.update(id,ProductCategoryWriteDTO);
+		ProductCategoryReadDTO updatedProductCategoryReadDTO = this.productCategoryService.update(id,ProductCategoryWriteDTO);		
+		ApiResponseDTO<ProductCategoryReadDTO> response = new ApiResponseDTO<>("¡El ProductCategory ha sido actualizado con éxito!",updatedProductCategoryReadDTO);
 
-		Map<String, Object> response = new HashMap<>();
-		response.put("mensaje", "¡El ProductCategory ha sido actualizado con éxito!");
-		response.put("productCategory", updatedProductCategoryReadDTO);
-
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<ApiResponseDTO<ProductCategoryReadDTO>>(response, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/product_category/{id}")
 	public ResponseEntity<?> delete(@PathVariable Long id) {
 		this.productCategoryService.delete(id);
 		
-		Map<String, Object> response = new HashMap<>();
-		response.put("mensaje", "¡El ProductCategory ha sido eliminado con éxito!");
+		ApiResponseDTO<ProductCategoryReadDTO> response = new ApiResponseDTO<>("¡El ProductCategory ha sido eliminado con éxito!",null);		
 
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+		return new ResponseEntity<ApiResponseDTO<ProductCategoryReadDTO>>(response, HttpStatus.OK);
 	}
 }

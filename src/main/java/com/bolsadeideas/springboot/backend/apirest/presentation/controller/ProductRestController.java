@@ -1,8 +1,6 @@
 package com.bolsadeideas.springboot.backend.apirest.presentation.controller;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataException;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductReadDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ProductWriteDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.response.ApiResponseDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IProductService;
 
 import jakarta.validation.Valid;
@@ -53,12 +52,9 @@ public class ProductRestController {
 		}
 		
 		ProductReadDTO newProductoReadDTO = this.productService.save(productWriteDTO);		
+		ApiResponseDTO<ProductReadDTO> response = new ApiResponseDTO<>("¡El producto ha sido creado con éxito!",newProductoReadDTO);		
 
-		Map<String, Object> response = new HashMap<>();
-		response.put("mensaje", "¡El producto ha sido creado con éxito!");
-		response.put("producto", newProductoReadDTO);
-
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<ApiResponseDTO<ProductReadDTO>>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/products/{id}")
@@ -67,22 +63,18 @@ public class ProductRestController {
 			throw new InvalidDataException(result);
 		}
 		
-		ProductReadDTO updatedProductReadDTO = this.productService.update(id,productWriteDTO);		
-
-		Map<String, Object> response = new HashMap<>();
-		response.put("mensaje", "¡El Product ha sido actualizado con éxito!");
-		response.put("producto", updatedProductReadDTO);
-
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+		ProductReadDTO updatedProductReadDTO = this.productService.update(id,productWriteDTO);
+		ApiResponseDTO<ProductReadDTO> response = new ApiResponseDTO<>("¡El Product ha sido actualizado con éxito!",updatedProductReadDTO);
+		
+		return new ResponseEntity<ApiResponseDTO<ProductReadDTO>>(response, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/products/{id}")
 	public ResponseEntity<?> delete(@PathVariable Long id) {
 		this.productService.delete(id);
 		
-		Map<String, Object> response = new HashMap<>();
-		response.put("mensaje", "¡El Product ha sido eliminado con éxito!");
+		ApiResponseDTO<ProductReadDTO> response = new ApiResponseDTO<>("¡El Product ha sido eliminado con éxito!",null);
 
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+		return new ResponseEntity<ApiResponseDTO<ProductReadDTO>>(response, HttpStatus.OK);
 	}
 }

@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataException;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthLoginDTO;
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthResponseDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.UserWriteDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.response.AuthResponseDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.RefreshTokenDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.UpdatePasswordDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.implementation.UserDetailsServiceImpl;

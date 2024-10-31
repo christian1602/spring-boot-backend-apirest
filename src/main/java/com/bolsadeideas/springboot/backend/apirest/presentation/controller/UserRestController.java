@@ -1,8 +1,6 @@
 package com.bolsadeideas.springboot.backend.apirest.presentation.controller;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.UserReadDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.response.ApiResponseDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IUserService;
 
 @RestController
@@ -77,11 +76,9 @@ public class UserRestController {
 	@DeleteMapping("/users/{id}")
 	// @PreAuthorize("hasAuthority('DELETE')")
 	public ResponseEntity<?> delete(@PathVariable Long id) {
-		Map<String, Object> response = new HashMap<>();
+		this.userService.delete(id);		
 
-		this.userService.delete(id);
-		response.put("mensaje", "¡El Usuario ha sido eliminado con éxito!");
-
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+		ApiResponseDTO<UserReadDTO> response = new ApiResponseDTO<>("¡El Usuario ha sido eliminado con éxito!",null);
+		return new ResponseEntity<ApiResponseDTO<UserReadDTO>>(response, HttpStatus.OK);
 	}
 }

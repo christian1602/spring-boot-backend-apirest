@@ -1,8 +1,6 @@
 package com.bolsadeideas.springboot.backend.apirest.presentation.controller;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataException;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ClienteReadDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ClienteWriteDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.response.ApiResponseDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IClienteService;
 
 import jakarta.validation.Valid;
@@ -54,13 +53,10 @@ public class ClienteRestController {
 			throw new InvalidDataException(result);
 		}
 		
-		ClienteReadDTO newClienteReadDTO = this.clienteService.save(clienteWriteDTO);
-		Map<String, Object> response = new HashMap<>();
+		ClienteReadDTO newClienteReadDTO = this.clienteService.save(clienteWriteDTO);		
+		ApiResponseDTO<ClienteReadDTO> response = new ApiResponseDTO<>("¡El cliente ha sido creado con éxito!",newClienteReadDTO);		
 
-		response.put("mensaje", "¡El cliente ha sido creado con éxito!");
-		response.put("cliente", newClienteReadDTO);
-
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<ApiResponseDTO<ClienteReadDTO>>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/clientes/{id}")
@@ -70,21 +66,17 @@ public class ClienteRestController {
 		}
 				
 		ClienteReadDTO updatedCienteReadDTO = this.clienteService.update(id,clienteWriteDTO);
-
-		Map<String, Object> response = new HashMap<>();
-		response.put("mensaje", "¡El cliente ha sido actualizado con éxito!");
-		response.put("cliente", updatedCienteReadDTO);
-
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		ApiResponseDTO<ClienteReadDTO> response = new ApiResponseDTO<>("¡El cliente ha sido actualizado con éxito!",updatedCienteReadDTO);
+		
+		return new ResponseEntity<ApiResponseDTO<ClienteReadDTO>>(response, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/clientes/{id}")
 	public ResponseEntity<?> delete(@PathVariable Long id) {
 		this.clienteService.delete(id);
 		
-		Map<String, Object> response = new HashMap<>();
-		response.put("mensaje", "¡El cliente ha sido eliminado con éxito!");
+		ApiResponseDTO<ClienteReadDTO> response = new ApiResponseDTO<>("¡El cliente ha sido eliminado con éxito!",null);		
 
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+		return new ResponseEntity<ApiResponseDTO<ClienteReadDTO>>(response, HttpStatus.OK);
 	}
 }

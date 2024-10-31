@@ -1,8 +1,6 @@
 package com.bolsadeideas.springboot.backend.apirest.presentation.controller;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataException;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.CategoryReadDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.CategoryWriteDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.response.ApiResponseDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.ICategoryService;
 
 import jakarta.validation.Valid;
@@ -53,12 +52,9 @@ public class CategoryRestController {
 		}
 		
 		CategoryReadDTO newCategoriaReadDTO = this.categoryService.save(categoryWriteDTO);
-		
-		Map<String, Object> response = new HashMap<>();
-		response.put("mensaje", "¡La categoria ha sido creada con éxito!");
-		response.put("categoria", newCategoriaReadDTO);
+		ApiResponseDTO<CategoryReadDTO> response = new ApiResponseDTO<>("¡La categoria ha sido creada con éxito!",newCategoriaReadDTO);		
 
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<ApiResponseDTO<CategoryReadDTO>>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/categories/{id}")
@@ -68,21 +64,17 @@ public class CategoryRestController {
 		}
 				
 		CategoryReadDTO updatedCategoriaReadDTO = this.categoryService.update(id,categoryWriteDTO);
+		ApiResponseDTO<CategoryReadDTO> response = new ApiResponseDTO<>("¡La Categoria ha sido actualizada con éxito!",updatedCategoriaReadDTO);		
 
-		Map<String, Object> response = new HashMap<>();
-		response.put("mensaje", "¡La Categoria ha sido actualizada con éxito!");
-		response.put("categoria", updatedCategoriaReadDTO);
-
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+		return new ResponseEntity<ApiResponseDTO<CategoryReadDTO>>(response, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/categories/{id}")
 	public ResponseEntity<?> delete(@PathVariable Long id) {
 		this.categoryService.delete(id);
 		
-		Map<String, Object> response = new HashMap<>();
-		response.put("mensaje", "¡El Category ha sido eliminado con éxito!");
+		ApiResponseDTO<CategoryReadDTO> response = new ApiResponseDTO<>("¡El Category ha sido eliminado con éxito!",null);		
 
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+		return new ResponseEntity<ApiResponseDTO<CategoryReadDTO>>(response, HttpStatus.OK);
 	}
 }
