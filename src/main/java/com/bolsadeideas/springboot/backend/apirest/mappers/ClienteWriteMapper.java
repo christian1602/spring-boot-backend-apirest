@@ -5,15 +5,14 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.ClienteEntity;
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ClienteDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ClienteWriteDTO;
 
 @Mapper(componentModel = "spring")
-public interface ClienteMapper {
+public interface ClienteWriteMapper {
+
+	ClienteWriteMapper INSTANCE = Mappers.getMapper(ClienteWriteMapper.class);
 	
-	ClienteMapper INSTANCE = Mappers.getMapper(ClienteMapper.class);
-	
-	ClienteDTO clienteEntityToClienteDTO(ClienteEntity clienteEntity);
-	
+	@Mapping(target = "id", ignore = true)
 	@Mapping(target = "createdAt", ignore = true)
-	ClienteEntity clienteDTOToClienteEntity(ClienteDTO clienteDTO);
+	ClienteEntity toClienteEntityDTO(ClienteWriteDTO clienteWriteDTO);
 }

@@ -18,7 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bolsadeideas.springboot.backend.apirest.exception.InvalidDataException;
-import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ClienteDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ClienteReadDTO;
+import com.bolsadeideas.springboot.backend.apirest.presentation.dto.ClienteWriteDTO;
 import com.bolsadeideas.springboot.backend.apirest.service.interfaces.IClienteService;
 
 import jakarta.validation.Valid;
@@ -35,7 +36,7 @@ public class ClienteRestController {
 	}
 
 	@GetMapping("/clientes")
-	public List<ClienteDTO> index() {
+	public List<ClienteReadDTO> index() {
 		return this.clienteService.findAll();
 	}
 
@@ -43,36 +44,36 @@ public class ClienteRestController {
 	// @ResponseStatus(HttpStatus.OK) // PUEDE OMITIRSE YA QUE POR DEFECTO SIEMPRE
 	// DEVUELVE HttpStatus.OK
 	public ResponseEntity<?> show(@PathVariable Long id) {
-		ClienteDTO clienteDTO = this.clienteService.findById(id);
-		return new ResponseEntity<ClienteDTO>(clienteDTO, HttpStatus.OK);
+		ClienteReadDTO clienteReadDTO = this.clienteService.findById(id);
+		return new ResponseEntity<ClienteReadDTO>(clienteReadDTO, HttpStatus.OK);
 	}
 
 	@PostMapping("/clientes")
-	public ResponseEntity<?> create(@Valid @RequestBody ClienteDTO clienteDTO, BindingResult result) {
+	public ResponseEntity<?> create(@Valid @RequestBody ClienteWriteDTO clienteWriteDTO, BindingResult result) {
 		if (result.hasErrors()) {
 			throw new InvalidDataException(result);
 		}
 		
-		ClienteDTO nuevoClienteDTO = this.clienteService.save(clienteDTO);
-		Map<String, Object> response = new HashMap<>();		
+		ClienteReadDTO newClienteReadDTO = this.clienteService.save(clienteWriteDTO);
+		Map<String, Object> response = new HashMap<>();
 
 		response.put("mensaje", "¡El cliente ha sido creado con éxito!");
-		response.put("cliente", nuevoClienteDTO);
+		response.put("cliente", newClienteReadDTO);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/clientes/{id}")
-	public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody ClienteDTO clienteDTO, BindingResult result) {
+	public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody ClienteWriteDTO clienteWriteDTO, BindingResult result) {
 		if (result.hasErrors()) {
 			throw new InvalidDataException(result);
 		}
 				
-		ClienteDTO updatedCienteDTO = this.clienteService.update(id,clienteDTO);
+		ClienteReadDTO updatedCienteReadDTO = this.clienteService.update(id,clienteWriteDTO);
 
 		Map<String, Object> response = new HashMap<>();
 		response.put("mensaje", "¡El cliente ha sido actualizado con éxito!");
-		response.put("cliente", updatedCienteDTO);
+		response.put("cliente", updatedCienteReadDTO);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
