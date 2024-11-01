@@ -1,12 +1,25 @@
 INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('Andres','Guzman','profesor@bolsadeideas.com','2017-08-28');
 INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('John','Doe','john.doe@gmail.com','2017-08-28');
--- INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('Andres 2','Guzman','profesor2@bolsadeideas.com','2017-08-28');
--- INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('John 2','Doe','john.doe2@gmail.com','2017-08-28');
--- INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('Andres 3','Guzman','profesor3@bolsadeideas.com','2017-08-28');
--- INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('John 3','Doe','john.doe3@gmail.com','2017-08-28');
--- INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('Andres 4','Guzman','profesor4@bolsadeideas.com','2017-08-28');
--- INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('John 4','Doe','john.doe4@gmail.com','2017-08-28');
--- INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('Andres 5','Guzman','profesor5@bolsadeideas.com','2017-08-28');
--- INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('Joh 5n','Doe','john.doe5@gmail.com','2017-08-28');
--- INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('Andres 6','Guzman','profesor6@bolsadeideas.com','2017-08-28');
--- INSERT INTO clientes(nombre, apellido, email, created_at) VALUES('John 6','Doe','john.doe6@gmail.com','2017-08-28');
+
+INSERT INTO products(name) VALUES('Producto 1');
+INSERT INTO products(name) VALUES('Producto 2');
+INSERT INTO products(name) VALUES('Producto 3');
+INSERT INTO products(name) VALUES('Producto 4');
+INSERT INTO products(name) VALUES('Producto 5');
+INSERT INTO products(name) VALUES('Producto 6');
+INSERT INTO products(name) VALUES('Producto 7');
+INSERT INTO products(name) VALUES('Producto 8');
+INSERT INTO products(name) VALUES('Producto 9');
+INSERT INTO products(name) VALUES('Producto 10');
+INSERT INTO products(name) VALUES('Producto 11');
+INSERT INTO products(name) VALUES('Producto 12');
+INSERT INTO products(name) VALUES('Producto 13');
+INSERT INTO products(name) VALUES('Producto 14');
+INSERT INTO products(name) VALUES('Producto 15');
+INSERT INTO products(name) VALUES('Producto 16');
+INSERT INTO products(name) VALUES('Producto 17');
+INSERT INTO products(name) VALUES('Producto 18');
+INSERT INTO products(name) VALUES('Producto 19');
+INSERT INTO products(name) VALUES('Producto 20');
+
+

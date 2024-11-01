@@ -4,6 +4,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,5 +86,18 @@ public class ProductServiceImpl implements IProductService {
 		}
 			
 		this.productoRepository.deleteById(id);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Page<ProductReadDTO> findAll(Pageable pageable) {
+		// VERIFICAR SI EL pageable TIENE UN ORDEN DEFINIDO
+	    if (pageable.getSort().isUnsorted()) {
+	        // SI NO HAY UN ORDEN, USAR UN ORDEN POR DEFECTO(POR EJEMPLO, POR ID ASCENDENTE)
+	        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("id").ascending());
+	    }
+	    
+		Page<ProductEntity> pageProductEntity = this.productoRepository.findAll(pageable);
+		return pageProductEntity.map(this.productReadMapper::toProductReadDTO);
 	}
 }
