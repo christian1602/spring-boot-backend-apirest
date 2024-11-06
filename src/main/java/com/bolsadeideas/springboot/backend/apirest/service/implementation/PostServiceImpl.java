@@ -30,8 +30,8 @@ public class PostServiceImpl implements IPostService {
 
 	public PostServiceImpl(
 			IPostRepository postRepository, 
-			IUserRepository userRepository, 
-			PostReadMapper postReadMapper,
+			IUserRepository userRepository,
+			PostReadMapper postReadMapper, 
 			PostWriteMapper postWriteMapper) {
 		this.postRepository = postRepository;
 		this.userRepository = userRepository;
@@ -42,9 +42,8 @@ public class PostServiceImpl implements IPostService {
 	@Override
 	@Transactional(readOnly = true)
 	public List<PostReadDTO> findAll() {
-		Iterable<PostEntity> posts =  this.postRepository.findAll();		
-		return StreamSupport.stream(posts.spliterator(), false)
-				.map(this.postReadMapper::toPostReadDTO)
+		Iterable<PostEntity> posts = this.postRepository.findAll();
+		return StreamSupport.stream(posts.spliterator(), false).map(this.postReadMapper::toPostReadDTO)
 				.collect(Collectors.toList());
 	}
 
@@ -59,37 +58,38 @@ public class PostServiceImpl implements IPostService {
 	@Override
 	@Transactional
 	public PostReadDTO save(PostWriteDTO postWriteDTO) {
-		UserEntity userEntitY = this.userRepository.findById(postWriteDTO.userId())
-				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(postWriteDTO.userId().toString())));
-		
+		UserEntity userEntitY = this.userRepository.findById(postWriteDTO.userId()).orElseThrow(
+				() -> new UserNotFoundException("User not found with ID: ".concat(postWriteDTO.userId().toString())));
+
 		PostEntity postEntity = this.postWriteMapper.toPostEntity(postWriteDTO);
 		postEntity.setUser(userEntitY);
 		PostEntity savedPostEntity = this.postRepository.save(postEntity);
-		
+
 		return this.postReadMapper.toPostReadDTO(savedPostEntity);
 	}
-	
+
 	@Override
 	@Transactional
 	public PostReadDTO update(Long id, PostWriteDTO postWriteDTO) {
 		PostEntity existingPostEntity = this.postRepository.findById(id)
 				.orElseThrow(() -> new PostNotFoundException("Post not found with ID: ".concat(id.toString())));
-		
-	    if (!existingPostEntity.getUser().getId().equals(postWriteDTO.userId())) {
-	        throw new UserNotCreatorException("User with ID: ".concat(postWriteDTO.userId().toString()).concat(" is not the creator of the Post"));
-	    }
-	    
-	    UserEntity userEntity = this.userRepository.findById(postWriteDTO.userId())
-				.orElseThrow(()-> new UserNotFoundException("User not found with ID: ".concat(postWriteDTO.userId().toString())));
-		
+
+		if (!existingPostEntity.getUser().getId().equals(postWriteDTO.userId())) {
+			throw new UserNotCreatorException("User with ID: ".concat(postWriteDTO.userId().toString())
+					.concat(" is not the creator of the Post"));
+		}
+
+		UserEntity userEntity = this.userRepository.findById(postWriteDTO.userId()).orElseThrow(
+				() -> new UserNotFoundException("User not found with ID: ".concat(postWriteDTO.userId().toString())));
+
 		existingPostEntity.setTitle(postWriteDTO.title());
-		existingPostEntity.setBody(postWriteDTO.body());		
+		existingPostEntity.setBody(postWriteDTO.body());
 		existingPostEntity.setUser(userEntity);
-		
+
 		PostEntity updatedPostEntity = this.postRepository.save(existingPostEntity);
-		
+
 		return this.postReadMapper.toPostReadDTO(updatedPostEntity);
-	}	
+	}
 
 	@Override
 	@Transactional

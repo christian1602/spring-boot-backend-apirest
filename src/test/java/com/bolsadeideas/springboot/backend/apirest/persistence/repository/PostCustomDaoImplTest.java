@@ -85,12 +85,17 @@ class PostCustomDaoImplTest {
 	    assertTrue(posts.isEmpty(), "La lista de posts debería estar vacía.");
 	}
 	
+	/**
+	 * [Objetivo]
+	 * La prueba esta diseñada para verificar que el metodo findAllPostsWithUserId() no maneja internamente la excepción y, 
+	 * en cambio, la propaga hacia arriba, tal como se espera cuando se produce un error en el getResultList().
+	 */
 	@Test
 	void testFindAllPostsWithUserId_exception() {
 	    // Arrange
 	    when(this.entityManager.createQuery(anyString(), eq(Object[].class))).thenReturn(typedQuery);
 	    when(typedQuery.getResultList()).thenThrow(new RuntimeException("Error en la consulta"));
-	    
+	    	    
 	    // Act & Assert
 	    assertThrows(RuntimeException.class, () -> {
 	        this.postCustomDaoImpl.findAllPostsWithUserId();
