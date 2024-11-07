@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -19,6 +20,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.bolsadeideas.springboot.backend.apirest.exception.PostNotFoundException;
+import com.bolsadeideas.springboot.backend.apirest.exception.UserNotCreatorException;
+import com.bolsadeideas.springboot.backend.apirest.exception.UserNotFoundException;
 import com.bolsadeideas.springboot.backend.apirest.mappers.PostReadMapper;
 import com.bolsadeideas.springboot.backend.apirest.mappers.PostWriteMapper;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.PostEntity;
@@ -63,7 +66,11 @@ public class PostServiceImplTest {
 		this.postReadDTO = new PostReadDTO(1L, "Existing Title", "Existing Body");
 		this.postWriteDTO = new PostWriteDTO("New Title", "New Body", 1L);
 	}
-
+	
+	/**
+	 * [Objetivo]
+	 * Verifica que findAll devuelve una lista de publicaciones
+	 */
 	@Test
 	void testFindAll() {
 		// Arrange
@@ -78,6 +85,10 @@ public class PostServiceImplTest {
 		verify(this.postRepository).findAll();
 	}
 	
+	/**
+	 * [Objetivo]
+	 * Verifica que findById devuelve un DTO cuando la publicacion existe y lanza PostNotFoundException cuando no existe.
+	 */
 	@Test
 	void testFindById() {
 		// Arrange
@@ -108,6 +119,10 @@ public class PostServiceImplTest {
 		assertThrows(PostNotFoundException.class, () -> this.postServiceImpl.findById(1L));
 	}
 	/**
+	 * [Objetivo]
+	 * 
+	 * Verifica que save guarda una nueva publicacion y lanza UserNotFoundException si el usuario no existe.
+	 * 
 	 * [Consideraciones]
 	 * 
 	 * En este caso, se pasan objetos específicos a los mappers para verificar que estan recibiendo los datos correctos. 
@@ -124,12 +139,89 @@ public class PostServiceImplTest {
 		when(this.postRepository.save(any(PostEntity.class))).thenReturn(this.postEntity);
 		when(this.postReadMapper.toPostReadDTO(this.postEntity)).thenReturn(this.postReadDTO);
 		
-		// Acta
+		// Act
 		PostReadDTO result = this.postServiceImpl.save(this.postWriteDTO);
 		
-		// Asserts
+		// Assert
 		assertNotNull(result);
 		verify(this.postRepository).save(any(PostEntity.class));
 		verify(this.userRepository).findById(anyLong());
+	}
+	
+	@Test
+	void testSave_UserNotFoundException() {
+		// Arrange
+		when(this.userRepository.findById(anyLong())).thenReturn(Optional.empty());
+		
+		// Act & Assert
+		assertThrows(UserNotFoundException.class, () -> this.postServiceImpl.save(this.postWriteDTO));
+	}
+	
+	/**
+	 * [Objetivo]
+	 * 
+	 * Verifica que update actualiza una publicacion existente y maneja PostNotFoundException y UserNotCreatorException.
+	 */
+	@Test
+	void testUpdate() {
+		// Arrange
+		when(this.postRepository.findById(anyLong())).thenReturn(Optional.of(this.postEntity));
+		when(this.userRepository.findById(anyLong())).thenReturn(Optional.of(this.userEntity));
+		when(this.postRepository.save(any(PostEntity.class))).thenReturn(this.postEntity);
+		when(this.postReadMapper.toPostReadDTO(this.postEntity)).thenReturn(this.postReadDTO);
+		
+		// Act
+		PostReadDTO result = this.postServiceImpl.update(1L,this.postWriteDTO);
+		
+		// Assert
+		assertNotNull(result);
+		verify(this.postRepository).save(any(PostEntity.class));
+	}
+	
+	@Test
+	void testUpdate_PostNotFoundException() {
+		// Arrange
+		when(this.postRepository.findById(anyLong())).thenReturn(Optional.empty());
+		
+		// Act & Assert
+		assertThrows(PostNotFoundException.class, () -> this.postServiceImpl.update(1L, this.postWriteDTO));
+	}
+	
+	@Test
+	void testUpdate_UserNotCreatorException() {
+		// Arrange
+		this.postEntity.setUser(new UserEntity());
+		this.postEntity.getUser().setId(2L); // Different user ID		
+		when(this.postRepository.findById(anyLong())).thenReturn(Optional.of(this.postEntity));
+		
+		// Act & Assert
+		assertThrows(UserNotCreatorException.class, () -> this.postServiceImpl.update(1L, this.postWriteDTO));
+	}
+	
+	/**
+	 * [Objetivo]
+	 * 
+	 * Verifica que delete elimina una publicacion y lanza PostNotFoundException si la publicacion no existe. 
+	 */
+	@Test
+	void testDelete() {
+		// Arrange		
+		when(this.postRepository.findById(anyLong())).thenReturn(Optional.of(this.postEntity));
+		doNothing().when(this.postRepository).deleteById(anyLong());
+		
+		// Act
+		this.postServiceImpl.delete(1L);
+		
+		// Assert
+		verify(this.postRepository).deleteById(anyLong());
+	}
+	
+	@Test
+	void testDelete_PostNotFoundException() {
+		// Arrange
+		when(this.postRepository.findById(anyLong())).thenReturn(Optional.empty());
+		
+		// Act & Assert
+		assertThrows(PostNotFoundException.class, () -> this.postServiceImpl.delete(1L));
 	}
 }

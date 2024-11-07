@@ -58,8 +58,8 @@ public class PostServiceImpl implements IPostService {
 	@Override
 	@Transactional
 	public PostReadDTO save(PostWriteDTO postWriteDTO) {
-		UserEntity userEntitY = this.userRepository.findById(postWriteDTO.userId()).orElseThrow(
-				() -> new UserNotFoundException("User not found with ID: ".concat(postWriteDTO.userId().toString())));
+		UserEntity userEntitY = this.userRepository.findById(postWriteDTO.userId())
+				.orElseThrow(() -> new UserNotFoundException("User not found with ID: ".concat(postWriteDTO.userId().toString())));
 
 		PostEntity postEntity = this.postWriteMapper.toPostEntity(postWriteDTO);
 		postEntity.setUser(userEntitY);
