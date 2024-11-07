@@ -34,9 +34,6 @@ import com.bolsadeideas.springboot.backend.apirest.presentation.dto.PostWriteDTO
 @ExtendWith(MockitoExtension.class)
 public class PostServiceImplTest {
 
-	@InjectMocks
-	private PostServiceImpl postServiceImpl;
-
 	@Mock
 	private IPostRepository postRepository;
 
@@ -48,6 +45,9 @@ public class PostServiceImplTest {
 
 	@Mock
 	private PostWriteMapper postWriteMapper;
+	
+	@InjectMocks
+	private PostServiceImpl postServiceImpl;
 
 	private PostEntity postEntity;
 	private PostReadDTO postReadDTO;

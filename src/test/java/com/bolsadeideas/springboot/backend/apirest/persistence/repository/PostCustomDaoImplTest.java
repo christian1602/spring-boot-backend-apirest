@@ -28,14 +28,14 @@ import jakarta.validation.ValidatorFactory;
 @ExtendWith(MockitoExtension.class)
 class PostCustomDaoImplTest {
 	
-	@InjectMocks
-	private PostCustomDaoImpl postCustomDaoImpl;
-	
 	@Mock
 	private EntityManager entityManager;
 	
 	@Mock
 	private TypedQuery<Object[]> typedQuery;
+	
+	@InjectMocks
+	private PostCustomDaoImpl postCustomDaoImpl;
 	
 	private Validator validator;
 	

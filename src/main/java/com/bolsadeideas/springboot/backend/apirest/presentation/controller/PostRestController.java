@@ -109,11 +109,11 @@ public class PostRestController {
 	}
 
 	@PostMapping("/posts")
-	public ResponseEntity<?> create(@Valid @RequestBody PostWriteDTO postWriteDTO, BindingResult result) {
+	public ResponseEntity<?> create(@Valid @RequestBody PostWriteDTO postWriteDTO, BindingResult result) {		
 		if (result.hasErrors()) {
 			throw new InvalidDataException(result);
 		}
- 
+		
 		PostReadDTO newPostReadDTO = this.postService.save(postWriteDTO);
 		ApiResponseDTO<PostReadDTO> response = new ApiResponseDTO<>("¡El Post ha sido creado con éxito!",newPostReadDTO);	
 

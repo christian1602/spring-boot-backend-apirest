@@ -117,7 +117,7 @@ public class GlobalExceptionHandler {
 	}
 	
 	@ExceptionHandler(InvalidDataException.class)
-	public ResponseEntity<ErrorResponse> handleInvalidDataException(InvalidDataException ex){				
+	public ResponseEntity<ErrorResponse> handleInvalidDataException(InvalidDataException ex){		
 		List<String> errors = ex.getResult().getFieldErrors().stream()
 	            .map(fieldError -> "El campo '"
 	            .concat(fieldError.getField())
@@ -125,7 +125,7 @@ public class GlobalExceptionHandler {
 				.concat(Optional.ofNullable(fieldError.getDefaultMessage()).orElse("Sin mensaje de error")))
 	            .collect(Collectors.toList());
 
-		ErrorResponse response = new ErrorResponse("Invalid Data",errors);
+		ErrorResponse response = new ErrorResponse("Invalid Data",errors);	    
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	}
 	
