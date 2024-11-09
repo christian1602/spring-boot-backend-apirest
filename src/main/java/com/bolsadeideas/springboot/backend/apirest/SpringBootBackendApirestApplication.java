@@ -9,9 +9,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.PermissionEntity;
+import com.bolsadeideas.springboot.backend.apirest.persistence.entity.PostEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.RoleEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.RoleEnum;
 import com.bolsadeideas.springboot.backend.apirest.persistence.entity.UserEntity;
+import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IPostRepository;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IUserRepository;
 
 @SpringBootApplication
@@ -22,7 +24,7 @@ public class SpringBootBackendApirestApplication {
 	}
 
     @Bean
-    CommandLineRunner init(IUserRepository userRepository){
+    CommandLineRunner init(IUserRepository userRepository, IPostRepository postRepository){
 		return args -> {
 			// CREATE PERMISSIONS
 			PermissionEntity createPermission = new PermissionEntity();
@@ -85,7 +87,7 @@ public class SpringBootBackendApirestApplication {
 			walterUser.setCredentialNoExpired(true);
 			walterUser.setRoles(Set.of(userRole));
 			
-			UserEntity lizUser = new UserEntity();			
+			UserEntity lizUser = new UserEntity();
 			lizUser.setEmail("liz@mail.com");
 			lizUser.setUsername("liz");
 			lizUser.setPassword("$2a$10$qG3wS1Evr6WNJIJof5TEXOV5CTIJZDrenVSSxqJ2kIWbq6HDydVNi");
@@ -95,7 +97,7 @@ public class SpringBootBackendApirestApplication {
 			lizUser.setCredentialNoExpired(true);
 			lizUser.setRoles(Set.of(guestRole));
 
-			userRepository.saveAll(List.of(christianUser,walterUser,lizUser,bellaUser));
+			userRepository.saveAll(List.of(christianUser,walterUser,lizUser,bellaUser));			
 		};
 	}
 }

@@ -52,6 +52,7 @@ public class SecurityConfig {
 				.authorizeHttpRequests(auths -> {
 					// PERMITIR ACCESO PUBLICO A SWAGGER
 		            auths.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
+		            auths.requestMatchers("/h2-console/**").permitAll();
 					// ENDPOINTS PUBLICOS DE AUTENTICACION
 					auths.requestMatchers(HttpMethod.POST, "/auth/sign-up").permitAll();
 					auths.requestMatchers(HttpMethod.POST, "/auth/log-in").permitAll();
@@ -69,8 +70,7 @@ public class SecurityConfig {
 	                auths.requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("READ"); // Permite acceso solo a READ
 	                auths.requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAuthority("CREATE"); // Permite acceso solo a CREATE
 	                auths.requestMatchers(HttpMethod.DELETE, "/api/users/{id}").hasAuthority("DELETE"); // Permite acceso solo a DELETE
-	                
-	                
+	                	                
 	                auths.requestMatchers(HttpMethod.GET, "/api/posts").hasAuthority("READ");
 	                auths.requestMatchers(HttpMethod.GET, "/api/posts-resttemplate").hasAuthority("READ");
 	                auths.requestMatchers(HttpMethod.GET, "/api/posts-webclient").hasAuthority("READ");

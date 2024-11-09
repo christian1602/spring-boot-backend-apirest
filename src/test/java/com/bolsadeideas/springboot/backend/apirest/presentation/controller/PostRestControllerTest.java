@@ -49,9 +49,12 @@ public class PostRestControllerTest {
 	
 	@BeforeEach
 	void setUp() {
-		MockitoAnnotations.openMocks(this);
+		// [PRUEBA UNITARIA]		
+		// USA MockMvcBuilders.standaloneSetup PARA CONFIGURAR MockMvc DE FORMA MANUAL,
+		// SIN CARGAR TODO EL CONTEXTO DE SPRING, LO CUAL HACE LA PRUEBA MAS RAPIDA Y AISLADA
+		MockitoAnnotations.openMocks(this); // INICIA LOS MOCKS EN LA CLASE
 		this.mockMvc = MockMvcBuilders.standaloneSetup(this.postRestController)
-				.setControllerAdvice(new GlobalExceptionHandler())
+				.setControllerAdvice(new GlobalExceptionHandler())	// CONFIGURA MANEJO DE EXCEPCIONES
 				.build();
 	}
 	
