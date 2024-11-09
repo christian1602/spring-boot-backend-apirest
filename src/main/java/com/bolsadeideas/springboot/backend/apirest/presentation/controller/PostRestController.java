@@ -72,19 +72,19 @@ public class PostRestController {
 	
 	// USANDO LA INTERFACE IPostCustomService
 	
-	@GetMapping("/posts-with-userid")
+	@GetMapping("/posts-with-user-id")
 	public List<PostReadWithUserIdDTO> findAllPostsWithUserId() {
 		return this.postCustomService.getAllPostsWithUserId();
 	}
 	
 	// USANDO LA INTERFACE IPostApiService
 	
-	@GetMapping("/posts-api-resttemplate")
+	@GetMapping("/posts-api-rest-template")
 	public List<PostReadWithUserIdDTO> listPostsRestTemplate() {
 		return this.postApiService.apiFetchPostsRestTemplate();
 	}
 	
-	@GetMapping("/posts-api-webclient")
+	@GetMapping("/posts-api-web-client")
 	public List<PostReadWithUserIdDTO> listPosts() {
 		return this.postApiService.apiFetchPostsWebClient();
 	}
