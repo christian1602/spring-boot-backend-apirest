@@ -8,6 +8,7 @@ import com.bolsadeideas.springboot.backend.apirest.persistence.entity.UserEntity
 
 public interface IUserRepository extends CrudRepository<UserEntity, Long> {
 	 
-	Optional<UserEntity> findUserEntityByUsername(String username);
+	Optional<UserEntity> findUserEntityByUsername(String username);	
+	Optional<UserEntity> findTopByOrderByIdDesc();
 	boolean existsByEmail(String email);
 }

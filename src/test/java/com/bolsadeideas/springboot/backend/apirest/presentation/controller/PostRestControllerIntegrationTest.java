@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
@@ -19,6 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import com.bolsadeideas.springboot.backend.apirest.persistence.entity.UserEntity;
 import com.bolsadeideas.springboot.backend.apirest.persistence.repository.IUserRepository;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthLoginDTO;
 import com.bolsadeideas.springboot.backend.apirest.presentation.dto.AuthRolesDTO;
@@ -41,6 +43,7 @@ import com.jayway.jsonpath.JsonPath;
 public class PostRestControllerIntegrationTest {
 	
 	private static String jwtToken;
+	private static Long idUserTest;
 
 	// [PRUEBA DE INTEGRACION]
 	// USA @SpringBootTest Y @AutoConfigureMockMvc PARA INYECTAR MockMvc EN UN CONTEXTO DE APLICACION COMPLETO, 
@@ -53,8 +56,7 @@ public class PostRestControllerIntegrationTest {
 	
 	@Autowired
 	private IUserRepository userRepository;
-	
-	private Long idUserTest;
+		
 	private String usernameTest;
 	private String passwordTest;
 	private String emailTest;
@@ -62,7 +64,6 @@ public class PostRestControllerIntegrationTest {
 
 	@BeforeEach
 	void setup() throws Exception {
-		this.idUserTest = 5L;
 		this.usernameTest = "test_user";
 		this.passwordTest = "123456";
 		this.emailTest = "test_user@mail";
@@ -74,9 +75,12 @@ public class PostRestControllerIntegrationTest {
 			}
 			
 			MvcResult mvcResult = this.loginTestUser(this.usernameTest, this.passwordTest);
-			PostRestControllerIntegrationTest.jwtToken = this.obtainAccessToken(mvcResult);		
+			PostRestControllerIntegrationTest.jwtToken = this.obtainAccessToken(mvcResult);
+			
+			Optional<UserEntity> optionaUserEntityTop = this.userRepository.findTopByOrderByIdDesc();
+			PostRestControllerIntegrationTest.idUserTest = optionaUserEntityTop.get().getId();
 			this.loadInitPosts();
-		}		
+		}
 	}
 	
 	private void registerTestUser(String username, String password) throws Exception{
@@ -107,7 +111,7 @@ public class PostRestControllerIntegrationTest {
 	}
 	
 	private void loadInitPosts() throws Exception {
-		PostWriteDTO postWriteDTO = new PostWriteDTO("Titulo Post 1","Body Post 1",this.idUserTest);
+		PostWriteDTO postWriteDTO = new PostWriteDTO("Titulo Post 1","Body Post 1",PostRestControllerIntegrationTest.idUserTest);
 		
 		this.mockMvc.perform(post("/api/posts")
 				.header("Authorization", "Bearer ".concat(PostRestControllerIntegrationTest.jwtToken))
